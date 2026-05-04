@@ -107,16 +107,9 @@ function Page() {
                             }
                           };
                           return (
-                            <>
-                              <Button asChild size="sm" variant="outline">
-                                <a href={url} target="_blank" rel="noopener noreferrer">
-                                  <FileText className="w-3 h-3 mr-1" /> Open
-                                </a>
-                              </Button>
-                              <Button size="sm" variant="outline" onClick={downloadFile}>
-                                <Download className="w-3 h-3 mr-1" /> Download
-                              </Button>
-                            </>
+                            <Button size="sm" variant="outline" onClick={downloadFile}>
+                              <Download className="w-3 h-3 mr-1" /> Download
+                            </Button>
                           );
                         })()}
                       </div>
