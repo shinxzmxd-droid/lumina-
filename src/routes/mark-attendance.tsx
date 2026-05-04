@@ -90,10 +90,35 @@ function Page() {
             <TabsContent value="all">
               <Card className="p-0 overflow-hidden">
                 <table className="w-full text-sm">
-                  <thead className="bg-muted/50"><tr><th className="text-left p-3">Student</th><th className="text-right p-3">Present</th></tr></thead>
+                  <thead className="bg-muted/50"><tr><th className="text-left p-3">Student</th><th className="text-right p-3">Status</th></tr></thead>
                   <tbody>
                     {students.length === 0 && <tr><td colSpan={2} className="p-6 text-center text-muted-foreground">No students enrolled.</td></tr>}
-                    {students.map(s => renderRow(s, present[s.user_id] ?? true))}
+                    {students.map(s => {
+                      const isPresent = present[s.user_id] ?? true;
+                      return (
+                        <tr key={s.user_id} className="border-t">
+                          <td className="p-3">{s.full_name}</td>
+                          <td className="p-3 text-right">
+                            <div className="inline-flex rounded-md overflow-hidden border">
+                              <button
+                                type="button"
+                                onClick={() => setPresent({ ...present, [s.user_id]: true })}
+                                className={`px-3 py-1.5 text-xs font-medium transition-colors ${isPresent ? "bg-success text-success-foreground" : "bg-background hover:bg-muted"}`}
+                              >
+                                Present
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setPresent({ ...present, [s.user_id]: false })}
+                                className={`px-3 py-1.5 text-xs font-medium transition-colors border-l ${!isPresent ? "bg-destructive text-destructive-foreground" : "bg-background hover:bg-muted"}`}
+                              >
+                                Absent
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </Card>
