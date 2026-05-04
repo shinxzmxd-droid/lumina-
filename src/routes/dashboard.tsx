@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, PieChart, Pie, Cell, LineChart, Line } from "recharts";
 import { Users, BookOpen, ClipboardCheck, Sparkles, FileText, TrendingUp, ArrowUpRight, CalendarDays, Mic } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { HolidaysCalendar } from "@/components/HolidaysCalendar";
 
 export const Route = createFileRoute("/dashboard")({
   component: () => <RequireAuth><DashboardRouter /></RequireAuth>,
@@ -110,6 +111,7 @@ function StudentDash() {
             </ResponsiveContainer>
           )}
         </div>
+        <HolidaysCalendar />
       </div>
     </div>
   );
@@ -195,8 +197,9 @@ function FacultyDash() {
 
         <div className="grid md:grid-cols-2 gap-5">
           <PastelTile to="/mark-attendance" tone="bg-pastel-mint" icon={ClipboardCheck} title="Mark attendance" subtitle="Log today's session quickly" />
-          <PastelTile to="/admin/courses" tone="bg-pastel-lilac" icon={BookOpen} title="My courses" subtitle="Materials & enrollments" />
+          <PastelTile to="/courses" tone="bg-pastel-lilac" icon={BookOpen} title="My courses" subtitle="Materials & enrollments" />
         </div>
+        <HolidaysCalendar />
       </div>
     </div>
   );
@@ -297,6 +300,7 @@ function AdminDash() {
           <PastelTile to="/admin/timetable" tone="bg-pastel-lilac" icon={CalendarDays} title="AI Timetable" subtitle="Generate schedule" />
           <PastelTile to="/admin/leaves" tone="bg-pastel-pink" icon={FileText} title="Leave Requests" subtitle="Review & approve" />
         </div>
+        <HolidaysCalendar />
       </div>
     </div>
   );
