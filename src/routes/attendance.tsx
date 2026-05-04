@@ -100,6 +100,52 @@ function Page() {
         <Progress value={overallPct} className="h-2" />
       </Card>
 
+      <Card className="p-6 bg-gradient-to-br from-primary/5 to-accent/5 border-primary/20">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div className="flex gap-3">
+            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+              <Sparkles className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-display font-semibold">AI Attendance Predictor</h3>
+              <p className="text-sm text-muted-foreground">Forecasts your next 4 weeks based on timetable + history.</p>
+            </div>
+          </div>
+          <Button onClick={runPrediction} disabled={predicting}>
+            {predicting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Predicting…</> : <><Sparkles className="w-4 h-4 mr-2" /> Predict</>}
+          </Button>
+        </div>
+
+        {prediction && (
+          <div className="mt-5 space-y-4">
+            <div className="flex items-center gap-4 flex-wrap">
+              <div>
+                <div className="text-xs uppercase tracking-wider text-muted-foreground">Predicted overall</div>
+                <div className="text-3xl font-bold font-display">{prediction.overall_predicted_pct}%</div>
+              </div>
+              <Badge variant={prediction.risk_level === "high" ? "destructive" : "secondary"} className={prediction.risk_level === "low" ? "bg-success text-success-foreground" : ""}>
+                {prediction.risk_level} risk
+              </Badge>
+            </div>
+            <p className="text-sm">{prediction.summary}</p>
+            <div className="grid md:grid-cols-2 gap-3">
+              {prediction.per_subject?.map((p: any) => (
+                <div key={p.code} className="p-3 rounded-lg bg-background border">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-display font-semibold text-sm">{p.code}</span>
+                    <span className={`text-sm font-bold ${p.predicted_pct >= 75 ? "text-success" : "text-destructive"}`}>
+                      {p.current_pct}% → {p.predicted_pct}%
+                    </span>
+                  </div>
+                  <div className="text-xs text-muted-foreground mb-1">Attend ≥ {p.classes_to_attend} more classes</div>
+                  <div className="text-xs">{p.advice}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </Card>
+
       <div>
         <h2 className="font-display font-semibold mb-3">Subject-wise attendance</h2>
         <div className="grid md:grid-cols-2 gap-4">
