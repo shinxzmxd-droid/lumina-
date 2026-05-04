@@ -73,12 +73,12 @@ function Page() {
       }
       const subjects = bySubject.map(s => ({ code: s.code, name: s.name, total: s.total, present: s.present, current_pct: s.pct }));
       const { data, error } = await supabase.functions.invoke("predict-attendance", {
-        body: { subjects, slots, weeksAhead: 2 },
+        body: { subjects, slots, weeksAhead: 2, assumeAllAttended: true },
       });
       if (error) throw error;
       if ((data as any)?.error) throw new Error((data as any).error);
       setPrediction((data as any).prediction);
-      toast.success("AI forecast ready");
+      toast.success("Forecast ready: assuming you attend every class");
     } catch (e: any) {
       toast.error(e.message ?? "Prediction failed");
     } finally {
