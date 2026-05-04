@@ -125,8 +125,13 @@ function Page() {
           <DialogHeader><DialogTitle>Upload material — {matCourse?.name}</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div><Label>Title</Label><Input value={matTitle} onChange={e=>setMatTitle(e.target.value)} placeholder="Chapter 1: Introduction" /></div>
-            <div><Label>Content / syllabus text</Label><Textarea rows={10} value={matContent} onChange={e=>setMatContent(e.target.value)} placeholder="Paste lecture notes, syllabus, or readings here. The AI tutor will ground answers in this." /></div>
-            <Button onClick={uploadMaterial} className="w-full">Save</Button>
+            <div>
+              <Label>Attach PDF (optional)</Label>
+              <Input type="file" accept="application/pdf,.pdf" onChange={e=>setMatFile(e.target.files?.[0] ?? null)} />
+              {matFile && <p className="text-xs text-muted-foreground mt-1">{matFile.name} ({Math.round(matFile.size/1024)} KB)</p>}
+            </div>
+            <div><Label>Notes / syllabus text (optional)</Label><Textarea rows={6} value={matContent} onChange={e=>setMatContent(e.target.value)} placeholder="Paste lecture notes — the AI tutor uses this to ground answers." /></div>
+            <Button onClick={uploadMaterial} disabled={uploading} className="w-full">{uploading ? "Uploading…" : "Save"}</Button>
           </div>
         </DialogContent>
       </Dialog>
