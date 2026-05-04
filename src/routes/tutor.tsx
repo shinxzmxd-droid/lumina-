@@ -191,7 +191,28 @@ function Page() {
           {busy && <div className="text-xs text-muted-foreground animate-pulse">Lumina is thinking…</div>}
         </div>
 
+        {myFiles.length > 0 && (
+          <div className="border-t px-3 py-2 flex flex-wrap gap-2 bg-muted/30">
+            {myFiles.map((f, i) => (
+              <Badge key={i} variant="secondary" className="gap-1">
+                {f.name}
+                <button onClick={()=>removeFile(i)} className="ml-1 opacity-70 hover:opacity-100"><X className="w-3 h-3" /></button>
+              </Badge>
+            ))}
+          </div>
+        )}
         <div className="border-t p-3 flex items-center gap-2 bg-card">
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".pdf,.txt,.md,.csv,.json,.ppt,.pptx,.doc,.docx"
+            multiple
+            className="hidden"
+            onChange={e => handleFiles(e.target.files)}
+          />
+          <Button size="icon" variant="outline" onClick={()=>fileRef.current?.click()} disabled={parsing} title="Attach PDF / notes / PPT">
+            <Paperclip className="w-4 h-4" />
+          </Button>
           <Button size="icon" variant={listening ? "destructive" : "outline"} onClick={toggleMic} className={listening ? "animate-pulse" : ""}>
             {listening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
           </Button>
@@ -202,7 +223,7 @@ function Page() {
             value={input}
             onChange={e=>setInput(e.target.value)}
             onKeyDown={e=>e.key==="Enter" && send()}
-            placeholder={listening ? "Listening…" : "Ask a question, or tap the mic"}
+            placeholder={listening ? "Listening…" : parsing ? "Reading file…" : "Ask a question, or tap the mic"}
             disabled={busy}
           />
           <Button onClick={()=>send()} disabled={busy} className="bg-gradient-primary"><Send className="w-4 h-4" /></Button>
