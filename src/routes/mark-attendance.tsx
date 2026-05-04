@@ -7,6 +7,9 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { CheckCircle2, XCircle } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/mark-attendance")({
@@ -65,24 +68,63 @@ function Page() {
         {courseId && <Button onClick={save} className="ml-auto bg-gradient-primary shadow-glow">Save attendance</Button>}
       </Card>
 
-      {courseId && (
-        <Card className="p-0 overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/50"><tr><th className="text-left p-3">Student</th><th className="text-right p-3">Present</th></tr></thead>
-            <tbody>
-              {students.length === 0 && <tr><td colSpan={2} className="p-6 text-center text-muted-foreground">No students enrolled.</td></tr>}
-              {students.map(s => (
-                <tr key={s.user_id} className="border-t">
-                  <td className="p-3">{s.full_name}</td>
-                  <td className="p-3 text-right">
-                    <Switch checked={present[s.user_id] ?? true} onCheckedChange={(v)=>setPresent({...present, [s.user_id]: v})} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </Card>
-      )}
+      {courseId && (() => {
+        const presentList = students.filter(s => present[s.user_id] ?? true);
+        const absentList = students.filter(s => !(present[s.user_id] ?? true));
+        const renderRow = (s: any, isPresent: boolean) => (
+          <tr key={s.user_id} className="border-t">
+            <td className="p-3">{s.full_name}</td>
+            <td className="p-3 text-right">
+              <Switch checked={isPresent} onCheckedChange={(v)=>setPresent({...present, [s.user_id]: v})} />
+            </td>
+          </tr>
+        );
+        return (
+          <Tabs defaultValue="all">
+            <TabsList>
+              <TabsTrigger value="all">All <Badge variant="outline" className="ml-2">{students.length}</Badge></TabsTrigger>
+              <TabsTrigger value="present"><CheckCircle2 className="w-3.5 h-3.5 mr-1 text-success" /> Present <Badge variant="outline" className="ml-2">{presentList.length}</Badge></TabsTrigger>
+              <TabsTrigger value="absent"><XCircle className="w-3.5 h-3.5 mr-1 text-destructive" /> Absent <Badge variant="outline" className="ml-2">{absentList.length}</Badge></TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="all">
+              <Card className="p-0 overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted/50"><tr><th className="text-left p-3">Student</th><th className="text-right p-3">Present</th></tr></thead>
+                  <tbody>
+                    {students.length === 0 && <tr><td colSpan={2} className="p-6 text-center text-muted-foreground">No students enrolled.</td></tr>}
+                    {students.map(s => renderRow(s, present[s.user_id] ?? true))}
+                  </tbody>
+                </table>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="present">
+              <Card className="p-0 overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted/50"><tr><th className="text-left p-3">Student</th><th className="text-right p-3">Mark absent</th></tr></thead>
+                  <tbody>
+                    {presentList.length === 0 && <tr><td colSpan={2} className="p-6 text-center text-muted-foreground">No students marked present.</td></tr>}
+                    {presentList.map(s => renderRow(s, true))}
+                  </tbody>
+                </table>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="absent">
+              <Card className="p-0 overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted/50"><tr><th className="text-left p-3">Student</th><th className="text-right p-3">Mark present</th></tr></thead>
+                  <tbody>
+                    {absentList.length === 0 && <tr><td colSpan={2} className="p-6 text-center text-muted-foreground">No students marked absent.</td></tr>}
+                    {absentList.map(s => renderRow(s, false))}
+                  </tbody>
+                </table>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        );
+      })()}
     </div>
   );
 }
