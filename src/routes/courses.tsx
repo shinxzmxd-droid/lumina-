@@ -53,13 +53,31 @@ function Page() {
   };
 
   const uploadMaterial = async () => {
-    if (!matCourse || !matTitle || !matContent) return;
-    const { error } = await supabase.from("course_materials").insert({
-      course_id: matCourse.id, title: matTitle, content: matContent, uploaded_by: user!.id,
-    });
-    if (error) return toast.error(error.message);
-    toast.success("Material uploaded — students can now ask the AI tutor about it");
-    setMatTitle(""); setMatContent(""); setMatCourse(null);
+    if (!matCourse || !matTitle) return toast.error("Title required");
+    if (!matContent && !matFile) return toast.error("Add notes text or attach a PDF");
+    setUploading(true);
+    try {
+      let file_url: string | null = null;
+      if (matFile) {
+        const path = `${matCourse.id}/${Date.now()}-${matFile.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;
+        const { error: upErr } = await supabase.storage.from("course-materials").upload(path, matFile, {
+          contentType: matFile.type || "application/pdf",
+        });
+        if (upErr) throw upErr;
+        const { data } = supabase.storage.from("course-materials").getPublicUrl(path);
+        file_url = data.publicUrl;
+      }
+      const { error } = await supabase.from("course_materials").insert({
+        course_id: matCourse.id, title: matTitle, content: matContent || null, file_url, uploaded_by: user!.id,
+      });
+      if (error) throw error;
+      toast.success("Material uploaded");
+      setMatTitle(""); setMatContent(""); setMatFile(null); setMatCourse(null);
+    } catch (e: any) {
+      toast.error(e.message ?? "Upload failed");
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
