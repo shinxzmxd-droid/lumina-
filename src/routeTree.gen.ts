@@ -11,8 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TutorRouteImport } from './routes/tutor'
 import { Route as TimetableRouteImport } from './routes/timetable'
+import { Route as StudentLeavesRouteImport } from './routes/student-leaves'
 import { Route as MarkAttendanceRouteImport } from './routes/mark-attendance'
 import { Route as LeavesRouteImport } from './routes/leaves'
+import { Route as FacultyLeavesRouteImport } from './routes/faculty-leaves'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -33,6 +35,11 @@ const TimetableRoute = TimetableRouteImport.update({
   path: '/timetable',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StudentLeavesRoute = StudentLeavesRouteImport.update({
+  id: '/student-leaves',
+  path: '/student-leaves',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MarkAttendanceRoute = MarkAttendanceRouteImport.update({
   id: '/mark-attendance',
   path: '/mark-attendance',
@@ -41,6 +48,11 @@ const MarkAttendanceRoute = MarkAttendanceRouteImport.update({
 const LeavesRoute = LeavesRouteImport.update({
   id: '/leaves',
   path: '/leaves',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FacultyLeavesRoute = FacultyLeavesRouteImport.update({
+  id: '/faculty-leaves',
+  path: '/faculty-leaves',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -95,8 +107,10 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/courses': typeof CoursesRoute
   '/dashboard': typeof DashboardRoute
+  '/faculty-leaves': typeof FacultyLeavesRoute
   '/leaves': typeof LeavesRoute
   '/mark-attendance': typeof MarkAttendanceRoute
+  '/student-leaves': typeof StudentLeavesRoute
   '/timetable': typeof TimetableRoute
   '/tutor': typeof TutorRoute
   '/admin/courses': typeof AdminCoursesRoute
@@ -110,8 +124,10 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/courses': typeof CoursesRoute
   '/dashboard': typeof DashboardRoute
+  '/faculty-leaves': typeof FacultyLeavesRoute
   '/leaves': typeof LeavesRoute
   '/mark-attendance': typeof MarkAttendanceRoute
+  '/student-leaves': typeof StudentLeavesRoute
   '/timetable': typeof TimetableRoute
   '/tutor': typeof TutorRoute
   '/admin/courses': typeof AdminCoursesRoute
@@ -126,8 +142,10 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/courses': typeof CoursesRoute
   '/dashboard': typeof DashboardRoute
+  '/faculty-leaves': typeof FacultyLeavesRoute
   '/leaves': typeof LeavesRoute
   '/mark-attendance': typeof MarkAttendanceRoute
+  '/student-leaves': typeof StudentLeavesRoute
   '/timetable': typeof TimetableRoute
   '/tutor': typeof TutorRoute
   '/admin/courses': typeof AdminCoursesRoute
@@ -143,8 +161,10 @@ export interface FileRouteTypes {
     | '/auth'
     | '/courses'
     | '/dashboard'
+    | '/faculty-leaves'
     | '/leaves'
     | '/mark-attendance'
+    | '/student-leaves'
     | '/timetable'
     | '/tutor'
     | '/admin/courses'
@@ -158,8 +178,10 @@ export interface FileRouteTypes {
     | '/auth'
     | '/courses'
     | '/dashboard'
+    | '/faculty-leaves'
     | '/leaves'
     | '/mark-attendance'
+    | '/student-leaves'
     | '/timetable'
     | '/tutor'
     | '/admin/courses'
@@ -173,8 +195,10 @@ export interface FileRouteTypes {
     | '/auth'
     | '/courses'
     | '/dashboard'
+    | '/faculty-leaves'
     | '/leaves'
     | '/mark-attendance'
+    | '/student-leaves'
     | '/timetable'
     | '/tutor'
     | '/admin/courses'
@@ -189,8 +213,10 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CoursesRoute: typeof CoursesRoute
   DashboardRoute: typeof DashboardRoute
+  FacultyLeavesRoute: typeof FacultyLeavesRoute
   LeavesRoute: typeof LeavesRoute
   MarkAttendanceRoute: typeof MarkAttendanceRoute
+  StudentLeavesRoute: typeof StudentLeavesRoute
   TimetableRoute: typeof TimetableRoute
   TutorRoute: typeof TutorRoute
   AdminCoursesRoute: typeof AdminCoursesRoute
@@ -215,6 +241,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TimetableRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/student-leaves': {
+      id: '/student-leaves'
+      path: '/student-leaves'
+      fullPath: '/student-leaves'
+      preLoaderRoute: typeof StudentLeavesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/mark-attendance': {
       id: '/mark-attendance'
       path: '/mark-attendance'
@@ -227,6 +260,13 @@ declare module '@tanstack/react-router' {
       path: '/leaves'
       fullPath: '/leaves'
       preLoaderRoute: typeof LeavesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/faculty-leaves': {
+      id: '/faculty-leaves'
+      path: '/faculty-leaves'
+      fullPath: '/faculty-leaves'
+      preLoaderRoute: typeof FacultyLeavesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -301,8 +341,10 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CoursesRoute: CoursesRoute,
   DashboardRoute: DashboardRoute,
+  FacultyLeavesRoute: FacultyLeavesRoute,
   LeavesRoute: LeavesRoute,
   MarkAttendanceRoute: MarkAttendanceRoute,
+  StudentLeavesRoute: StudentLeavesRoute,
   TimetableRoute: TimetableRoute,
   TutorRoute: TutorRoute,
   AdminCoursesRoute: AdminCoursesRoute,
