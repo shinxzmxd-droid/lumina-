@@ -59,9 +59,7 @@ export const getRouter = () => {
     routeTree,
     context: {},
     scrollRestoration: true,
-    defaultPreload: "intent",
     defaultStaleTime: 60_000,
-    defaultPreloadStaleTime: 60_000,
     defaultErrorComponent: DefaultErrorComponent,
   });
 
