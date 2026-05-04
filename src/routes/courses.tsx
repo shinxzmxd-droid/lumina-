@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { BookOpen, Plus, Upload } from "lucide-react";
+import { BookOpen, Plus, Upload, FileText, Pencil, Trash2, Download, Eye } from "lucide-react";
 
 export const Route = createFileRoute("/courses")({
   component: () => <RequireAuth><Page /></RequireAuth>,
