@@ -13,7 +13,15 @@ export const Route = createFileRoute("/admin/leaves")({
 
 function Page() {
   const [rows, setRows] = useState<any[]>([]);
-  const load = () => supabase.from("leaves").select("*, profiles!inner(full_name, user_id)").order("created_at", { ascending: false }).then(({data})=>setRows(data ?? []));
+  const load = async () => {
+    const { data: leaves } = await supabase.from("leaves").select("*").order("created_at", { ascending: false });
+    const ids = Array.from(new Set((leaves ?? []).map((l: any) => l.faculty_id)));
+    const { data: profs } = ids.length
+      ? await supabase.from("profiles").select("user_id, full_name").in("user_id", ids)
+      : { data: [] as any[] };
+    const nameMap = Object.fromEntries((profs ?? []).map((p: any) => [p.user_id, p.full_name]));
+    setRows((leaves ?? []).map((l: any) => ({ ...l, faculty_name: nameMap[l.faculty_id] ?? "—" })));
+  };
   useEffect(() => { load(); }, []);
 
   const decide = async (id: string, status: "approved" | "rejected") => {
@@ -32,7 +40,7 @@ function Page() {
             {rows.length===0 && <tr><td colSpan={5} className="p-6 text-center text-muted-foreground">No requests.</td></tr>}
             {rows.map(r => (
               <tr key={r.id} className="border-t">
-                <td className="p-3">{r.profiles?.full_name ?? "—"}</td>
+                <td className="p-3">{r.faculty_name}</td>
                 <td className="p-3">{r.start_date} → {r.end_date}</td>
                 <td className="p-3">{r.reason}</td>
                 <td className="p-3">
