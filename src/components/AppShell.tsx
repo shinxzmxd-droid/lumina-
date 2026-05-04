@@ -9,6 +9,7 @@ const navByRole: Record<AppRole, { to: string; label: string; icon: any }[]> = {
     { to: "/dashboard", label: "Overview", icon: LayoutDashboard },
     { to: "/attendance", label: "My Attendance", icon: ClipboardCheck },
     { to: "/courses", label: "Courses", icon: BookOpen },
+    { to: "/materials", label: "Course Materials", icon: FileText },
     { to: "/tutor", label: "AI Tutor", icon: BrainCircuit },
     { to: "/student-leaves", label: "My Leaves", icon: FileText },
     { to: "/timetable", label: "Timetable", icon: Calendar },
