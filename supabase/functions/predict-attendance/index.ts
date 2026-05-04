@@ -33,69 +33,78 @@ serve(async (req) => {
     }
     upcoming.sort((a, b) => a.date.localeCompare(b.date) || a.start.localeCompare(b.start));
 
-    const systemPrompt = `You are an academic attendance forecaster. For each upcoming class in a student's 2-week timetable, predict whether the student will attend (present/absent) using their historical present-rate per subject as the base probability. Slightly factor in patterns (e.g., students often skip early-morning or late-evening classes). Provide a confidence (0-1). Return ONLY structured data via the tool.`;
+    // Per-subject projection assuming student attends every upcoming class
+    const upcomingBySubject: Record<string, number> = {};
+    upcoming.forEach((c) => { upcomingBySubject[c.code] = (upcomingBySubject[c.code] ?? 0) + 1; });
 
-    const userPrompt = `Past attendance per subject:\n${JSON.stringify(subjects, null, 2)}\n\nUpcoming ${weeksAhead}-week schedule (${upcoming.length} classes):\n${JSON.stringify(upcoming, null, 2)}\n\nMin required attendance: 75%.`;
-
-    const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-        tools: [{
-          type: "function",
-          function: {
-            name: "submit_forecast",
-            description: "Submit per-class attendance forecast",
-            parameters: {
-              type: "object",
-              properties: {
-                summary: { type: "string", description: "1-2 sentence overall outlook" },
-                overall_predicted_pct: { type: "number" },
-                risk_level: { type: "string", enum: ["low", "medium", "high"] },
-                classes: {
-                  type: "array",
-                  items: {
-                    type: "object",
-                    properties: {
-                      date: { type: "string" },
-                      day: { type: "string" },
-                      code: { type: "string" },
-                      start: { type: "string" },
-                      end: { type: "string" },
-                      room: { type: "string" },
-                      prediction: { type: "string", enum: ["present", "absent"] },
-                      confidence: { type: "number" },
-                      reason: { type: "string" },
-                    },
-                    required: ["date", "day", "code", "start", "end", "prediction", "confidence", "reason"],
-                  },
-                },
-              },
-              required: ["summary", "overall_predicted_pct", "risk_level", "classes"],
-            },
-          },
-        }],
-        tool_choice: { type: "function", function: { name: "submit_forecast" } },
-      }),
+    const per_subject = (subjects as any[]).map((s) => {
+      const add = upcomingBySubject[s.code] ?? 0;
+      const newPresent = s.present + add;
+      const newTotal = s.total + add;
+      const projected_pct = newTotal ? Math.round((newPresent / newTotal) * 100) : 0;
+      return {
+        code: s.code,
+        name: s.name,
+        current_pct: s.current_pct,
+        upcoming_classes: add,
+        projected_present: newPresent,
+        projected_total: newTotal,
+        projected_pct,
+      };
     });
 
-    if (!resp.ok) {
-      const t = await resp.text();
-      if (resp.status === 429) return new Response(JSON.stringify({ error: "Rate limit exceeded, try again later." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-      if (resp.status === 402) return new Response(JSON.stringify({ error: "AI credits exhausted. Add credits in Settings." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-      console.error("AI error:", resp.status, t);
-      return new Response(JSON.stringify({ error: "AI gateway error" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    // Add subjects that only appear in timetable but not in past attendance
+    Object.keys(upcomingBySubject).forEach((code) => {
+      if (!per_subject.find((p) => p.code === code)) {
+        const add = upcomingBySubject[code];
+        per_subject.push({
+          code, name: code, current_pct: 0, upcoming_classes: add,
+          projected_present: add, projected_total: add, projected_pct: 100,
+        });
+      }
+    });
+
+    const totalPresent = per_subject.reduce((a, p) => a + p.projected_present, 0);
+    const totalAll = per_subject.reduce((a, p) => a + p.projected_total, 0);
+    const overall_predicted_pct = totalAll ? Math.round((totalPresent / totalAll) * 100) : 0;
+    const belowMin = per_subject.filter((p) => p.projected_pct < 75);
+    const risk_level = belowMin.length === 0 ? "low" : belowMin.length <= 1 ? "medium" : "high";
+
+    // Ask AI for a friendly 1-2 sentence summary
+    let summary = `If you attend every class for the next ${weeksAhead} weeks, your overall attendance becomes ${overall_predicted_pct}%.`;
+    try {
+      const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [
+            { role: "system", content: "You are a concise academic advisor. Reply in 1-2 short sentences only." },
+            { role: "user", content: `Student attends every class for next ${weeksAhead} weeks. Overall ${overall_predicted_pct}%. Per subject: ${JSON.stringify(per_subject.map(p => ({ code: p.code, current: p.current_pct, projected: p.projected_pct })))}. Min required is 75%. Give an encouraging, specific summary.` },
+          ],
+        }),
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        const text = data?.choices?.[0]?.message?.content?.trim();
+        if (text) summary = text;
+      } else if (resp.status === 429) {
+        return new Response(JSON.stringify({ error: "Rate limit exceeded, try again later." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      } else if (resp.status === 402) {
+        return new Response(JSON.stringify({ error: "AI credits exhausted. Add credits in Settings." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+    } catch (e) {
+      console.error("summary AI error", e);
     }
 
-    const data = await resp.json();
-    const args = data.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
-    const prediction = args ? JSON.parse(args) : null;
-    return new Response(JSON.stringify({ prediction, upcoming }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const classes = upcoming.map((c) => ({ ...c, prediction: "present", confidence: 1, reason: "Assumed attended" }));
+
+    return new Response(
+      JSON.stringify({
+        prediction: { summary, overall_predicted_pct, risk_level, per_subject, classes },
+      }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
   } catch (e) {
     console.error(e);
     return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
