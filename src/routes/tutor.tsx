@@ -32,7 +32,10 @@ function Page() {
   const [busy, setBusy] = useState(false);
   const [listening, setListening] = useState(false);
   const [muted, setMuted] = useState(false);
+  const [myFiles, setMyFiles] = useState<{ name: string; text: string }[]>([]);
+  const [parsing, setParsing] = useState(false);
   const recRef = useRef<any>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!user) return;
