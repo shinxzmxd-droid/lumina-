@@ -237,44 +237,66 @@ function AdminDash() {
   }, []);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold font-display">Campus overview</h1>
-        <p className="text-muted-foreground">Real-time institutional metrics.</p>
-      </div>
-      <div className="grid md:grid-cols-4 gap-4">
-        <StatCard icon={Users} label="Total users" value={counts.users} accent="bg-primary/10 text-primary" />
-        <StatCard icon={BookOpen} label="Courses" value={counts.courses} accent="bg-success/10 text-success" />
-        <StatCard icon={ClipboardCheck} label="Attendance entries" value={counts.attendance} accent="bg-accent/20 text-accent-foreground" />
-        <StatCard icon={Sparkles} label="AI engagements" value={counts.ai} accent="bg-warning/20 text-warning-foreground" />
-      </div>
-      <div className="grid lg:grid-cols-3 gap-6">
-        <Card className="p-6 lg:col-span-2">
-          <h3 className="font-display font-semibold mb-4">Attendance trend (last 14 days)</h3>
-          {trend.length === 0 ? <p className="text-sm text-muted-foreground">No data yet.</p> : (
-            <ResponsiveContainer width="100%" height={260}>
-              <LineChart data={trend}>
-                <XAxis dataKey="date" stroke="currentColor" opacity={0.5} />
-                <YAxis stroke="currentColor" opacity={0.5} />
-                <Tooltip />
-                <Line type="monotone" dataKey="attendance" stroke="oklch(0.55 0.18 220)" strokeWidth={3} dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
-          )}
-        </Card>
-        <Card className="p-6">
-          <h3 className="font-display font-semibold mb-4">Users by role</h3>
-          {pie.length === 0 ? <p className="text-sm text-muted-foreground">No users yet.</p> : (
-            <ResponsiveContainer width="100%" height={260}>
-              <PieChart>
-                <Pie data={pie} dataKey="value" nameKey="name" innerRadius={50} outerRadius={90}>
-                  {pie.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          )}
-        </Card>
+    <div className="-m-4 md:-m-6 lg:-m-8 p-6 md:p-10 min-h-[calc(100vh-4rem)] bg-pastel-cream text-pastel-ink">
+      <div className="max-w-7xl mx-auto flex flex-col gap-8">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold font-display">Campus overview 🎓</h1>
+            <p className="text-pastel-muted mt-1">Real-time institutional metrics.</p>
+          </div>
+          <div className="hidden md:flex items-center gap-3 bg-white rounded-2xl px-5 py-3 shadow-sm">
+            <div className="text-xs uppercase tracking-wider text-pastel-muted">Users</div>
+            <div className="text-2xl font-bold">{counts.users}</div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <PastelStat tone="bg-pastel-yellow" icon={Users} label="Total Users" value={counts.users} hint="All roles combined" />
+          <PastelStat tone="bg-pastel-mint" icon={BookOpen} label="Courses" value={counts.courses} hint="Active catalogue" />
+          <PastelStat tone="bg-pastel-lilac" icon={ClipboardCheck} label="Attendance" value={counts.attendance} hint="Entries logged" />
+          <PastelStat tone="bg-pastel-pink" icon={Sparkles} label="AI Engagements" value={counts.ai} hint="Tutor sessions" />
+        </div>
+
+        <div className="grid lg:grid-cols-3 gap-5">
+          <div className="lg:col-span-2 bg-white rounded-3xl p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-display text-xl font-bold">Attendance trend</h3>
+              <span className="text-xs px-3 py-1 rounded-full bg-pastel-mint">Last 14 days</span>
+            </div>
+            {trend.length === 0 ? <p className="text-sm text-pastel-muted">No data yet.</p> : (
+              <ResponsiveContainer width="100%" height={260}>
+                <LineChart data={trend}>
+                  <XAxis dataKey="date" stroke="currentColor" opacity={0.4} />
+                  <YAxis stroke="currentColor" opacity={0.4} />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="attendance" stroke="oklch(0.65 0.15 295)" strokeWidth={3} dot={{ r: 4, fill: "oklch(0.65 0.15 295)" }} />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+          <div className="bg-white rounded-3xl p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-display text-xl font-bold">Users by role</h3>
+            </div>
+            {pie.length === 0 ? <p className="text-sm text-pastel-muted">No users yet.</p> : (
+              <ResponsiveContainer width="100%" height={260}>
+                <PieChart>
+                  <Pie data={pie} dataKey="value" nameKey="name" innerRadius={50} outerRadius={90}>
+                    {pie.map((_, i) => <Cell key={i} fill={PASTEL_COLORS[i % PASTEL_COLORS.length]} />)}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <PastelTile to="/admin/users" tone="bg-pastel-yellow" icon={Users} title="Faculty & Roles" subtitle="Manage users" />
+          <PastelTile to="/admin/courses" tone="bg-pastel-mint" icon={BookOpen} title="Courses" subtitle="Catalogue & enrol" />
+          <PastelTile to="/admin/timetable" tone="bg-pastel-lilac" icon={CalendarDays} title="AI Timetable" subtitle="Generate schedule" />
+          <PastelTile to="/admin/leaves" tone="bg-pastel-pink" icon={FileText} title="Leave Requests" subtitle="Review & approve" />
+        </div>
       </div>
     </div>
   );
