@@ -202,7 +202,7 @@ function FacultyDash() {
   );
 }
 
-const COLORS = ["oklch(0.55 0.18 220)","oklch(0.78 0.16 75)","oklch(0.7 0.18 155)","oklch(0.6 0.22 25)"];
+const PASTEL_COLORS = ["oklch(0.92 0.06 95)","oklch(0.92 0.05 165)","oklch(0.9 0.06 295)","oklch(0.9 0.06 15)"];
 
 function AdminDash() {
   const [counts, setCounts] = useState({ users: 0, courses: 0, attendance: 0, ai: 0 });
