@@ -48,7 +48,7 @@ function Page() {
     supabase.from("timetable_slots").select("*, courses(code, name)").order("day_of_week").order("start_time").then(({data})=>{
       setSlots(data ?? []);
       const r = (data ?? []).find((s: any) => s.room && s.room.match(/\d/));
-      if (r) setRoom(r.room);
+      if (r?.room) setRoom(r.room);
     });
   }, []);
 
