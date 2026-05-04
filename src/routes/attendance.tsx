@@ -6,7 +6,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { AlertTriangle, CheckCircle2, Sparkles, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/attendance")({
   component: () => <RequireAuth roles={["student"]}><Page /></RequireAuth>,
