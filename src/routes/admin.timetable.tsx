@@ -222,11 +222,51 @@ function Page() {
         </div>
 
         <Button onClick={generate} disabled={busy} className="bg-gradient-primary shadow-glow">
-          {busy ? "Generating…" : <><Sparkles className="w-4 h-4 mr-2" />Generate timetable</>}
+          {busy ? (
+            <><Sparkles className="w-4 h-4 mr-2 animate-spin" />Generating timetable…</>
+          ) : (
+            <><Sparkles className="w-4 h-4 mr-2" />Generate timetable</>
+          )}
         </Button>
       </Card>
 
-      {preview.length > 0 && (() => {
+      {busy && (
+        <Card className="p-6 space-y-4">
+          <div className="flex items-center gap-3">
+            <Sparkles className="w-5 h-5 text-accent animate-pulse" />
+            <div>
+              <p className="font-semibold">AI is crafting your timetable…</p>
+              <p className="text-xs text-muted-foreground">Balancing {chosen.length} faculty across {days} days. Usually takes 5–15 seconds.</p>
+            </div>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs border-collapse min-w-[900px]">
+              <thead>
+                <tr className="bg-muted/60">
+                  <th className="border p-2 text-left font-semibold">DAY / TIME</th>
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <th key={i} className="border p-2"><div className="h-3 bg-muted rounded animate-pulse" /></th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {DAYS.slice(0, days).map(d => (
+                  <tr key={d.n}>
+                    <td className="border p-2 font-semibold bg-muted/30">{d.label}</td>
+                    {Array.from({ length: 6 }).map((_, i) => (
+                      <td key={i} className="border p-2">
+                        <div className="h-4 bg-muted rounded animate-pulse" style={{ animationDelay: `${(d.n + i) * 80}ms` }} />
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      )}
+
+      {!busy && preview.length > 0 && (() => {
         // Derive unique time columns directly from generated slots (sorted)
         const timeKeys = Array.from(
           new Set(preview.map((s: any) => `${s.start}-${s.end}`))
