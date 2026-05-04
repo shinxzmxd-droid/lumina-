@@ -46,7 +46,6 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
           <div>
             <div className="font-display font-bold text-lg leading-none">Lumina</div>
-            <div className="text-xs text-sidebar-foreground/60">Campus OS</div>
           </div>
         </Link>
 
