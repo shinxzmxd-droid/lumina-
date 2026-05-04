@@ -9,38 +9,254 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TutorRouteImport } from './routes/tutor'
+import { Route as TimetableRouteImport } from './routes/timetable'
+import { Route as MarkAttendanceRouteImport } from './routes/mark-attendance'
+import { Route as LeavesRouteImport } from './routes/leaves'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as CoursesRouteImport } from './routes/courses'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AttendanceRouteImport } from './routes/attendance'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminUsersRouteImport } from './routes/admin.users'
+import { Route as AdminTimetableRouteImport } from './routes/admin.timetable'
+import { Route as AdminLeavesRouteImport } from './routes/admin.leaves'
+import { Route as AdminCoursesRouteImport } from './routes/admin.courses'
 
+const TutorRoute = TutorRouteImport.update({
+  id: '/tutor',
+  path: '/tutor',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TimetableRoute = TimetableRouteImport.update({
+  id: '/timetable',
+  path: '/timetable',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MarkAttendanceRoute = MarkAttendanceRouteImport.update({
+  id: '/mark-attendance',
+  path: '/mark-attendance',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LeavesRoute = LeavesRouteImport.update({
+  id: '/leaves',
+  path: '/leaves',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CoursesRoute = CoursesRouteImport.update({
+  id: '/courses',
+  path: '/courses',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AttendanceRoute = AttendanceRouteImport.update({
+  id: '/attendance',
+  path: '/attendance',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/admin/users',
+  path: '/admin/users',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminTimetableRoute = AdminTimetableRouteImport.update({
+  id: '/admin/timetable',
+  path: '/admin/timetable',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminLeavesRoute = AdminLeavesRouteImport.update({
+  id: '/admin/leaves',
+  path: '/admin/leaves',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminCoursesRoute = AdminCoursesRouteImport.update({
+  id: '/admin/courses',
+  path: '/admin/courses',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/attendance': typeof AttendanceRoute
+  '/auth': typeof AuthRoute
+  '/courses': typeof CoursesRoute
+  '/dashboard': typeof DashboardRoute
+  '/leaves': typeof LeavesRoute
+  '/mark-attendance': typeof MarkAttendanceRoute
+  '/timetable': typeof TimetableRoute
+  '/tutor': typeof TutorRoute
+  '/admin/courses': typeof AdminCoursesRoute
+  '/admin/leaves': typeof AdminLeavesRoute
+  '/admin/timetable': typeof AdminTimetableRoute
+  '/admin/users': typeof AdminUsersRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/attendance': typeof AttendanceRoute
+  '/auth': typeof AuthRoute
+  '/courses': typeof CoursesRoute
+  '/dashboard': typeof DashboardRoute
+  '/leaves': typeof LeavesRoute
+  '/mark-attendance': typeof MarkAttendanceRoute
+  '/timetable': typeof TimetableRoute
+  '/tutor': typeof TutorRoute
+  '/admin/courses': typeof AdminCoursesRoute
+  '/admin/leaves': typeof AdminLeavesRoute
+  '/admin/timetable': typeof AdminTimetableRoute
+  '/admin/users': typeof AdminUsersRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/attendance': typeof AttendanceRoute
+  '/auth': typeof AuthRoute
+  '/courses': typeof CoursesRoute
+  '/dashboard': typeof DashboardRoute
+  '/leaves': typeof LeavesRoute
+  '/mark-attendance': typeof MarkAttendanceRoute
+  '/timetable': typeof TimetableRoute
+  '/tutor': typeof TutorRoute
+  '/admin/courses': typeof AdminCoursesRoute
+  '/admin/leaves': typeof AdminLeavesRoute
+  '/admin/timetable': typeof AdminTimetableRoute
+  '/admin/users': typeof AdminUsersRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/attendance'
+    | '/auth'
+    | '/courses'
+    | '/dashboard'
+    | '/leaves'
+    | '/mark-attendance'
+    | '/timetable'
+    | '/tutor'
+    | '/admin/courses'
+    | '/admin/leaves'
+    | '/admin/timetable'
+    | '/admin/users'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/attendance'
+    | '/auth'
+    | '/courses'
+    | '/dashboard'
+    | '/leaves'
+    | '/mark-attendance'
+    | '/timetable'
+    | '/tutor'
+    | '/admin/courses'
+    | '/admin/leaves'
+    | '/admin/timetable'
+    | '/admin/users'
+  id:
+    | '__root__'
+    | '/'
+    | '/attendance'
+    | '/auth'
+    | '/courses'
+    | '/dashboard'
+    | '/leaves'
+    | '/mark-attendance'
+    | '/timetable'
+    | '/tutor'
+    | '/admin/courses'
+    | '/admin/leaves'
+    | '/admin/timetable'
+    | '/admin/users'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AttendanceRoute: typeof AttendanceRoute
+  AuthRoute: typeof AuthRoute
+  CoursesRoute: typeof CoursesRoute
+  DashboardRoute: typeof DashboardRoute
+  LeavesRoute: typeof LeavesRoute
+  MarkAttendanceRoute: typeof MarkAttendanceRoute
+  TimetableRoute: typeof TimetableRoute
+  TutorRoute: typeof TutorRoute
+  AdminCoursesRoute: typeof AdminCoursesRoute
+  AdminLeavesRoute: typeof AdminLeavesRoute
+  AdminTimetableRoute: typeof AdminTimetableRoute
+  AdminUsersRoute: typeof AdminUsersRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/tutor': {
+      id: '/tutor'
+      path: '/tutor'
+      fullPath: '/tutor'
+      preLoaderRoute: typeof TutorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/timetable': {
+      id: '/timetable'
+      path: '/timetable'
+      fullPath: '/timetable'
+      preLoaderRoute: typeof TimetableRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mark-attendance': {
+      id: '/mark-attendance'
+      path: '/mark-attendance'
+      fullPath: '/mark-attendance'
+      preLoaderRoute: typeof MarkAttendanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/leaves': {
+      id: '/leaves'
+      path: '/leaves'
+      fullPath: '/leaves'
+      preLoaderRoute: typeof LeavesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/courses': {
+      id: '/courses'
+      path: '/courses'
+      fullPath: '/courses'
+      preLoaderRoute: typeof CoursesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/attendance': {
+      id: '/attendance'
+      path: '/attendance'
+      fullPath: '/attendance'
+      preLoaderRoute: typeof AttendanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +264,51 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/admin/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/timetable': {
+      id: '/admin/timetable'
+      path: '/admin/timetable'
+      fullPath: '/admin/timetable'
+      preLoaderRoute: typeof AdminTimetableRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/leaves': {
+      id: '/admin/leaves'
+      path: '/admin/leaves'
+      fullPath: '/admin/leaves'
+      preLoaderRoute: typeof AdminLeavesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/courses': {
+      id: '/admin/courses'
+      path: '/admin/courses'
+      fullPath: '/admin/courses'
+      preLoaderRoute: typeof AdminCoursesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AttendanceRoute: AttendanceRoute,
+  AuthRoute: AuthRoute,
+  CoursesRoute: CoursesRoute,
+  DashboardRoute: DashboardRoute,
+  LeavesRoute: LeavesRoute,
+  MarkAttendanceRoute: MarkAttendanceRoute,
+  TimetableRoute: TimetableRoute,
+  TutorRoute: TutorRoute,
+  AdminCoursesRoute: AdminCoursesRoute,
+  AdminLeavesRoute: AdminLeavesRoute,
+  AdminTimetableRoute: AdminTimetableRoute,
+  AdminUsersRoute: AdminUsersRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
