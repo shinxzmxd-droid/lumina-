@@ -31,11 +31,12 @@ function Page() {
   useEffect(() => {
     if (!courseId) return;
     (async () => {
-      const { data: enr } = await supabase.from("enrollments").select("student_id, profiles!inner(full_name, user_id)").eq("course_id", courseId);
-      // profiles join via user_id; fallback fetch
+      const { data: enr } = await supabase.from("enrollments").select("student_id").eq("course_id", courseId);
       const ids = (enr ?? []).map((e: any) => e.student_id);
+      if (ids.length === 0) { setStudents([]); setPresent({}); return; }
       const { data: profs } = await supabase.from("profiles").select("*").in("user_id", ids);
-      setStudents(profs ?? []);
+      const sorted = (profs ?? []).sort((a, b) => (a.full_name || "").localeCompare(b.full_name || ""));
+      setStudents(sorted);
       const init: Record<string, boolean> = {};
       ids.forEach((id: string) => init[id] = true);
       setPresent(init);
