@@ -111,9 +111,12 @@ function Page() {
             <h3 className="font-display font-semibold mb-1">{c.name}</h3>
             {c.description && <p className="text-sm text-muted-foreground mb-3">{c.description}</p>}
             {role === "faculty" && (
-              <Button size="sm" variant="outline" className="w-full" onClick={()=>setMatCourse(c)}>
-                <Upload className="w-3 h-3 mr-2" /> Add material
-              </Button>
+              <div className="space-y-2">
+                <Button size="sm" variant="outline" className="w-full" onClick={()=>setMatCourse(c)}>
+                  <Upload className="w-3 h-3 mr-2" /> Add material
+                </Button>
+                <FacultyMaterials courseId={c.id} />
+              </div>
             )}
           </Card>
         ))}
