@@ -225,7 +225,10 @@ function Page() {
               <tr><th className="text-left p-3">Date</th><th className="text-left p-3">Course</th><th className="text-left p-3">Status</th></tr>
             </thead>
             <tbody>
-              {rows.slice(0, 30).map(r => (
+              {(() => {
+                const latest = rows[0]?.session_date;
+                return rows.filter(r => r.session_date === latest);
+              })().map(r => (
                 <tr key={r.id} className="border-t">
                   <td className="p-3">{r.session_date}</td>
                   <td className="p-3">{r.courses?.code} — {r.courses?.name}</td>
