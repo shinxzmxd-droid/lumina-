@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { askTutor } from "@/server/ai.functions";
 import { useServerFn } from "@tanstack/react-start";
-import { Mic, MicOff, Send, Volume2, BrainCircuit, Sparkles } from "lucide-react";
+import { Mic, MicOff, Send, Volume2, VolumeX, BrainCircuit, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/tutor")({
