@@ -29,7 +29,7 @@ function Page() {
 
   const setRole = async (uid: string, role: string) => {
     await supabase.from("user_roles").delete().eq("user_id", uid);
-    const { error } = await supabase.from("user_roles").insert({ user_id: uid, role });
+    const { error } = await supabase.from("user_roles").insert({ user_id: uid, role: role as any });
     if (error) return toast.error(error.message);
     toast.success("Role updated"); load();
   };

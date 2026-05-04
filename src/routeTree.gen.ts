@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TutorRouteImport } from './routes/tutor'
 import { Route as TimetableRouteImport } from './routes/timetable'
 import { Route as MarkAttendanceRouteImport } from './routes/mark-attendance'
 import { Route as LeavesRouteImport } from './routes/leaves'
@@ -17,7 +18,16 @@ import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AttendanceRouteImport } from './routes/attendance'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminUsersRouteImport } from './routes/admin.users'
+import { Route as AdminTimetableRouteImport } from './routes/admin.timetable'
+import { Route as AdminLeavesRouteImport } from './routes/admin.leaves'
+import { Route as AdminCoursesRouteImport } from './routes/admin.courses'
 
+const TutorRoute = TutorRouteImport.update({
+  id: '/tutor',
+  path: '/tutor',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TimetableRoute = TimetableRouteImport.update({
   id: '/timetable',
   path: '/timetable',
@@ -58,6 +68,26 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/admin/users',
+  path: '/admin/users',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminTimetableRoute = AdminTimetableRouteImport.update({
+  id: '/admin/timetable',
+  path: '/admin/timetable',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminLeavesRoute = AdminLeavesRouteImport.update({
+  id: '/admin/leaves',
+  path: '/admin/leaves',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminCoursesRoute = AdminCoursesRouteImport.update({
+  id: '/admin/courses',
+  path: '/admin/courses',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -68,6 +98,11 @@ export interface FileRoutesByFullPath {
   '/leaves': typeof LeavesRoute
   '/mark-attendance': typeof MarkAttendanceRoute
   '/timetable': typeof TimetableRoute
+  '/tutor': typeof TutorRoute
+  '/admin/courses': typeof AdminCoursesRoute
+  '/admin/leaves': typeof AdminLeavesRoute
+  '/admin/timetable': typeof AdminTimetableRoute
+  '/admin/users': typeof AdminUsersRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -78,6 +113,11 @@ export interface FileRoutesByTo {
   '/leaves': typeof LeavesRoute
   '/mark-attendance': typeof MarkAttendanceRoute
   '/timetable': typeof TimetableRoute
+  '/tutor': typeof TutorRoute
+  '/admin/courses': typeof AdminCoursesRoute
+  '/admin/leaves': typeof AdminLeavesRoute
+  '/admin/timetable': typeof AdminTimetableRoute
+  '/admin/users': typeof AdminUsersRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -89,6 +129,11 @@ export interface FileRoutesById {
   '/leaves': typeof LeavesRoute
   '/mark-attendance': typeof MarkAttendanceRoute
   '/timetable': typeof TimetableRoute
+  '/tutor': typeof TutorRoute
+  '/admin/courses': typeof AdminCoursesRoute
+  '/admin/leaves': typeof AdminLeavesRoute
+  '/admin/timetable': typeof AdminTimetableRoute
+  '/admin/users': typeof AdminUsersRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -101,6 +146,11 @@ export interface FileRouteTypes {
     | '/leaves'
     | '/mark-attendance'
     | '/timetable'
+    | '/tutor'
+    | '/admin/courses'
+    | '/admin/leaves'
+    | '/admin/timetable'
+    | '/admin/users'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -111,6 +161,11 @@ export interface FileRouteTypes {
     | '/leaves'
     | '/mark-attendance'
     | '/timetable'
+    | '/tutor'
+    | '/admin/courses'
+    | '/admin/leaves'
+    | '/admin/timetable'
+    | '/admin/users'
   id:
     | '__root__'
     | '/'
@@ -121,6 +176,11 @@ export interface FileRouteTypes {
     | '/leaves'
     | '/mark-attendance'
     | '/timetable'
+    | '/tutor'
+    | '/admin/courses'
+    | '/admin/leaves'
+    | '/admin/timetable'
+    | '/admin/users'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -132,10 +192,22 @@ export interface RootRouteChildren {
   LeavesRoute: typeof LeavesRoute
   MarkAttendanceRoute: typeof MarkAttendanceRoute
   TimetableRoute: typeof TimetableRoute
+  TutorRoute: typeof TutorRoute
+  AdminCoursesRoute: typeof AdminCoursesRoute
+  AdminLeavesRoute: typeof AdminLeavesRoute
+  AdminTimetableRoute: typeof AdminTimetableRoute
+  AdminUsersRoute: typeof AdminUsersRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/tutor': {
+      id: '/tutor'
+      path: '/tutor'
+      fullPath: '/tutor'
+      preLoaderRoute: typeof TutorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/timetable': {
       id: '/timetable'
       path: '/timetable'
@@ -192,6 +264,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/admin/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/timetable': {
+      id: '/admin/timetable'
+      path: '/admin/timetable'
+      fullPath: '/admin/timetable'
+      preLoaderRoute: typeof AdminTimetableRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/leaves': {
+      id: '/admin/leaves'
+      path: '/admin/leaves'
+      fullPath: '/admin/leaves'
+      preLoaderRoute: typeof AdminLeavesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/courses': {
+      id: '/admin/courses'
+      path: '/admin/courses'
+      fullPath: '/admin/courses'
+      preLoaderRoute: typeof AdminCoursesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -204,6 +304,11 @@ const rootRouteChildren: RootRouteChildren = {
   LeavesRoute: LeavesRoute,
   MarkAttendanceRoute: MarkAttendanceRoute,
   TimetableRoute: TimetableRoute,
+  TutorRoute: TutorRoute,
+  AdminCoursesRoute: AdminCoursesRoute,
+  AdminLeavesRoute: AdminLeavesRoute,
+  AdminTimetableRoute: AdminTimetableRoute,
+  AdminUsersRoute: AdminUsersRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
