@@ -6,10 +6,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { askTutor } from "@/server/ai.functions";
 import { useServerFn } from "@tanstack/react-start";
-import { Mic, MicOff, Send, Volume2, VolumeX, BrainCircuit, Sparkles } from "lucide-react";
+import { Mic, MicOff, Send, Volume2, VolumeX, BrainCircuit, Sparkles, Paperclip, X } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/tutor")({
@@ -31,7 +32,10 @@ function Page() {
   const [busy, setBusy] = useState(false);
   const [listening, setListening] = useState(false);
   const [muted, setMuted] = useState(false);
+  const [myFiles, setMyFiles] = useState<{ name: string; text: string }[]>([]);
+  const [parsing, setParsing] = useState(false);
   const recRef = useRef<any>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -70,7 +74,9 @@ function Page() {
     setMessages(m => [...m, { role: "user", text }]);
     setInput(""); setBusy(true);
     try {
-      const ctx = materials.map(m => `# ${m.title}\n${m.content}`).join("\n\n");
+      const courseCtx = materials.map(m => `# ${m.title}\n${m.content ?? ""}`).join("\n\n");
+      const myCtx = myFiles.map(f => `# (Student upload) ${f.name}\n${f.text}`).join("\n\n");
+      const ctx = [courseCtx, myCtx].filter(Boolean).join("\n\n");
       const courseName = courses.find(c => c.id === courseId)?.name ?? "";
       const { answer } = await ask({ data: { question: text, context: ctx, courseName } });
       setMessages(m => [...m, { role: "assistant", text: answer }]);
@@ -82,6 +88,53 @@ function Page() {
       setBusy(false);
     }
   };
+
+  const handleFiles = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    setParsing(true);
+    try {
+      const out: { name: string; text: string }[] = [];
+      for (const f of Array.from(files)) {
+        const ext = f.name.toLowerCase().split(".").pop() ?? "";
+        let text = "";
+        if (["txt","md","csv","json"].includes(ext)) {
+          text = await f.text();
+        } else if (ext === "pdf") {
+          try {
+            const url = "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.7.76/build/pdf.min.mjs";
+            const pdfjs: any = await import(/* @vite-ignore */ url);
+            pdfjs.GlobalWorkerOptions.workerSrc = "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.7.76/build/pdf.worker.min.mjs";
+            const buf = await f.arrayBuffer();
+            const doc = await pdfjs.getDocument({ data: buf }).promise;
+            const parts: string[] = [];
+            const maxPages = Math.min(doc.numPages, 30);
+            for (let i = 1; i <= maxPages; i++) {
+              const page = await doc.getPage(i);
+              const content = await page.getTextContent();
+              parts.push(content.items.map((it: any) => it.str).join(" "));
+            }
+            text = parts.join("\n\n");
+          } catch {
+            text = `(PDF "${f.name}" attached — extraction failed; ask the AI about it by name.)`;
+          }
+        } else if (["ppt","pptx","doc","docx"].includes(ext)) {
+          text = `(Slides/document "${f.name}" attached — describe what you want help with.)`;
+        } else {
+          text = `(File "${f.name}" attached.)`;
+        }
+        out.push({ name: f.name, text: text.slice(0, 12000) });
+      }
+      setMyFiles(prev => [...prev, ...out]);
+      toast.success(`Added ${out.length} file(s) to AI context`);
+    } catch (e: any) {
+      toast.error(e.message ?? "Could not read file");
+    } finally {
+      setParsing(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
+
+  const removeFile = (i: number) => setMyFiles(prev => prev.filter((_, idx) => idx !== i));
 
   const toggleMic = () => {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -138,7 +191,28 @@ function Page() {
           {busy && <div className="text-xs text-muted-foreground animate-pulse">Lumina is thinking…</div>}
         </div>
 
+        {myFiles.length > 0 && (
+          <div className="border-t px-3 py-2 flex flex-wrap gap-2 bg-muted/30">
+            {myFiles.map((f, i) => (
+              <Badge key={i} variant="secondary" className="gap-1">
+                {f.name}
+                <button onClick={()=>removeFile(i)} className="ml-1 opacity-70 hover:opacity-100"><X className="w-3 h-3" /></button>
+              </Badge>
+            ))}
+          </div>
+        )}
         <div className="border-t p-3 flex items-center gap-2 bg-card">
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".pdf,.txt,.md,.csv,.json,.ppt,.pptx,.doc,.docx"
+            multiple
+            className="hidden"
+            onChange={e => handleFiles(e.target.files)}
+          />
+          <Button size="icon" variant="outline" onClick={()=>fileRef.current?.click()} disabled={parsing} title="Attach PDF / notes / PPT">
+            <Paperclip className="w-4 h-4" />
+          </Button>
           <Button size="icon" variant={listening ? "destructive" : "outline"} onClick={toggleMic} className={listening ? "animate-pulse" : ""}>
             {listening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
           </Button>
@@ -149,7 +223,7 @@ function Page() {
             value={input}
             onChange={e=>setInput(e.target.value)}
             onKeyDown={e=>e.key==="Enter" && send()}
-            placeholder={listening ? "Listening…" : "Ask a question, or tap the mic"}
+            placeholder={listening ? "Listening…" : parsing ? "Reading file…" : "Ask a question, or tap the mic"}
             disabled={busy}
           />
           <Button onClick={()=>send()} disabled={busy} className="bg-gradient-primary"><Send className="w-4 h-4" /></Button>
