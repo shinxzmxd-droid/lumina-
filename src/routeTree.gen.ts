@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TutorRouteImport } from './routes/tutor'
 import { Route as TimetableRouteImport } from './routes/timetable'
 import { Route as StudentLeavesRouteImport } from './routes/student-leaves'
+import { Route as MaterialsRouteImport } from './routes/materials'
 import { Route as MarkAttendanceRouteImport } from './routes/mark-attendance'
 import { Route as LeavesRouteImport } from './routes/leaves'
 import { Route as FacultyLeavesRouteImport } from './routes/faculty-leaves'
@@ -38,6 +39,11 @@ const TimetableRoute = TimetableRouteImport.update({
 const StudentLeavesRoute = StudentLeavesRouteImport.update({
   id: '/student-leaves',
   path: '/student-leaves',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MaterialsRoute = MaterialsRouteImport.update({
+  id: '/materials',
+  path: '/materials',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MarkAttendanceRoute = MarkAttendanceRouteImport.update({
@@ -110,6 +116,7 @@ export interface FileRoutesByFullPath {
   '/faculty-leaves': typeof FacultyLeavesRoute
   '/leaves': typeof LeavesRoute
   '/mark-attendance': typeof MarkAttendanceRoute
+  '/materials': typeof MaterialsRoute
   '/student-leaves': typeof StudentLeavesRoute
   '/timetable': typeof TimetableRoute
   '/tutor': typeof TutorRoute
@@ -127,6 +134,7 @@ export interface FileRoutesByTo {
   '/faculty-leaves': typeof FacultyLeavesRoute
   '/leaves': typeof LeavesRoute
   '/mark-attendance': typeof MarkAttendanceRoute
+  '/materials': typeof MaterialsRoute
   '/student-leaves': typeof StudentLeavesRoute
   '/timetable': typeof TimetableRoute
   '/tutor': typeof TutorRoute
@@ -145,6 +153,7 @@ export interface FileRoutesById {
   '/faculty-leaves': typeof FacultyLeavesRoute
   '/leaves': typeof LeavesRoute
   '/mark-attendance': typeof MarkAttendanceRoute
+  '/materials': typeof MaterialsRoute
   '/student-leaves': typeof StudentLeavesRoute
   '/timetable': typeof TimetableRoute
   '/tutor': typeof TutorRoute
@@ -164,6 +173,7 @@ export interface FileRouteTypes {
     | '/faculty-leaves'
     | '/leaves'
     | '/mark-attendance'
+    | '/materials'
     | '/student-leaves'
     | '/timetable'
     | '/tutor'
@@ -181,6 +191,7 @@ export interface FileRouteTypes {
     | '/faculty-leaves'
     | '/leaves'
     | '/mark-attendance'
+    | '/materials'
     | '/student-leaves'
     | '/timetable'
     | '/tutor'
@@ -198,6 +209,7 @@ export interface FileRouteTypes {
     | '/faculty-leaves'
     | '/leaves'
     | '/mark-attendance'
+    | '/materials'
     | '/student-leaves'
     | '/timetable'
     | '/tutor'
@@ -216,6 +228,7 @@ export interface RootRouteChildren {
   FacultyLeavesRoute: typeof FacultyLeavesRoute
   LeavesRoute: typeof LeavesRoute
   MarkAttendanceRoute: typeof MarkAttendanceRoute
+  MaterialsRoute: typeof MaterialsRoute
   StudentLeavesRoute: typeof StudentLeavesRoute
   TimetableRoute: typeof TimetableRoute
   TutorRoute: typeof TutorRoute
@@ -246,6 +259,13 @@ declare module '@tanstack/react-router' {
       path: '/student-leaves'
       fullPath: '/student-leaves'
       preLoaderRoute: typeof StudentLeavesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/materials': {
+      id: '/materials'
+      path: '/materials'
+      fullPath: '/materials'
+      preLoaderRoute: typeof MaterialsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mark-attendance': {
@@ -344,6 +364,7 @@ const rootRouteChildren: RootRouteChildren = {
   FacultyLeavesRoute: FacultyLeavesRoute,
   LeavesRoute: LeavesRoute,
   MarkAttendanceRoute: MarkAttendanceRoute,
+  MaterialsRoute: MaterialsRoute,
   StudentLeavesRoute: StudentLeavesRoute,
   TimetableRoute: TimetableRoute,
   TutorRoute: TutorRoute,
