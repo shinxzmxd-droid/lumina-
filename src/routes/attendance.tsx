@@ -46,6 +46,39 @@ function Page() {
   const overallPresent = rows.filter(r => r.present).length;
   const overallPct = overallTotal ? Math.round((overallPresent / overallTotal) * 100) : 0;
 
+  const runPrediction = async () => {
+    if (!user) return;
+    if (bySubject.length === 0) {
+      toast.error("No attendance data yet to predict from");
+      return;
+    }
+    setPredicting(true);
+    try {
+      const courseIds = Array.from(new Set(rows.map(r => r.course_id)));
+      const { data: slots } = await supabase
+        .from("timetable_slots")
+        .select("course_id, courses(code)")
+        .in("course_id", courseIds);
+      const tt: Record<string, number> = {};
+      (slots ?? []).forEach((s: any) => {
+        const code = s.courses?.code ?? "?";
+        tt[code] = (tt[code] ?? 0) + 1;
+      });
+      const subjects = bySubject.map(s => ({ code: s.code, name: s.name, total: s.total, present: s.present, current_pct: s.pct }));
+      const { data, error } = await supabase.functions.invoke("predict-attendance", {
+        body: { subjects, timetable: tt, weeksAhead: 4 },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      setPrediction((data as any).prediction);
+      toast.success("AI prediction ready");
+    } catch (e: any) {
+      toast.error(e.message ?? "Prediction failed");
+    } finally {
+      setPredicting(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div>
