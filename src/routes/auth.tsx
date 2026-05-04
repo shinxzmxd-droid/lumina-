@@ -63,8 +63,7 @@ function AuthPage() {
         <div>
           <h2 className="font-display text-4xl font-bold mb-3">Your campus, unified.</h2>
           <p className="text-primary-foreground/70 max-w-md">
-            One login for students, faculty and administrators. Attendance, timetables,
-            leaves and an AI tutor that actually understands your syllabus.
+            "Your campus, powered by an AI that understands your learning."
           </p>
         </div>
         <div className="text-xs text-primary-foreground/50">© Lumina · MVP</div>
