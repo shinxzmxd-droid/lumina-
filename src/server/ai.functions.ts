@@ -1,26 +1,32 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-const GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+const AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
+const MODEL = "google/gemini-2.5-flash";
 
-async function callGemini(systemPrompt: string, userPrompt: string) {
-  const key = process.env.GEMINI_API_KEY;
-  if (!key) throw new Error("GEMINI_API_KEY not configured");
-  const res = await fetch(`${GEMINI_URL}?key=${key}`, {
+async function callAI(systemPrompt: string, userPrompt: string) {
+  const key = process.env.LOVABLE_API_KEY;
+  if (!key) throw new Error("LOVABLE_API_KEY not configured");
+  const res = await fetch(AI_URL, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${key}`,
+    },
     body: JSON.stringify({
-      systemInstruction: { parts: [{ text: systemPrompt }] },
-      contents: [{ role: "user", parts: [{ text: userPrompt }] }],
+      model: MODEL,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
     }),
   });
   if (!res.ok) {
     const t = await res.text();
-    throw new Error(`Gemini error ${res.status}: ${t}`);
+    throw new Error(`AI gateway error ${res.status}: ${t}`);
   }
   const data: any = await res.json();
-  const text = data?.candidates?.[0]?.content?.parts?.map((p: any) => p.text).join("") ?? "";
-  return text;
+  return data?.choices?.[0]?.message?.content ?? "";
 }
 
 export const askTutor = createServerFn({ method: "POST" })
@@ -43,7 +49,7 @@ Course material:
 """
 ${data.context.slice(0, 8000) || "(no material uploaded — answer from general knowledge but say so briefly)"}
 """`;
-    const text = await callGemini(sys, data.question);
+    const text = await callAI(sys, data.question);
     return { answer: text };
   });
 
@@ -74,7 +80,7 @@ Rules:
 - Distribute subjects evenly across the week.
 - Use rooms R-101, R-102, R-201, R-202.`;
     const userPrompt = `Faculty:\n${JSON.stringify(data.faculty, null, 2)}\nReturn the JSON now.`;
-    const raw = await callGemini(sys, userPrompt);
+    const raw = await callAI(sys, userPrompt);
     const clean = raw.replace(/```json|```/g, "").trim();
     try {
       const parsed = JSON.parse(clean);
