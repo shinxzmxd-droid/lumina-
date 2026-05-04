@@ -55,23 +55,30 @@ function Page() {
     setPredicting(true);
     try {
       const courseIds = Array.from(new Set(rows.map(r => r.course_id)));
-      const { data: slots } = await supabase
+      const { data: slotsRaw } = await supabase
         .from("timetable_slots")
-        .select("course_id, courses(code)")
+        .select("day_of_week, start_time, end_time, room, course_id, courses(code)")
         .in("course_id", courseIds);
-      const tt: Record<string, number> = {};
-      (slots ?? []).forEach((s: any) => {
-        const code = s.courses?.code ?? "?";
-        tt[code] = (tt[code] ?? 0) + 1;
-      });
+      const slots = (slotsRaw ?? []).map((s: any) => ({
+        day_of_week: s.day_of_week,
+        start_time: s.start_time,
+        end_time: s.end_time,
+        room: s.room,
+        code: s.courses?.code ?? "?",
+      }));
+      if (slots.length === 0) {
+        toast.error("No timetable found for your courses");
+        setPredicting(false);
+        return;
+      }
       const subjects = bySubject.map(s => ({ code: s.code, name: s.name, total: s.total, present: s.present, current_pct: s.pct }));
       const { data, error } = await supabase.functions.invoke("predict-attendance", {
-        body: { subjects, timetable: tt, weeksAhead: 4 },
+        body: { subjects, slots, weeksAhead: 2 },
       });
       if (error) throw error;
       if ((data as any)?.error) throw new Error((data as any).error);
       setPrediction((data as any).prediction);
-      toast.success("AI prediction ready");
+      toast.success("AI forecast ready");
     } catch (e: any) {
       toast.error(e.message ?? "Prediction failed");
     } finally {
