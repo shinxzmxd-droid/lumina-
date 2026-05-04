@@ -111,6 +111,7 @@ function StudentDash() {
             </ResponsiveContainer>
           )}
         </div>
+        <HolidaysCalendar />
       </div>
     </div>
   );
