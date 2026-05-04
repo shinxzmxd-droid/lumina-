@@ -226,76 +226,70 @@ function Page() {
         </Button>
       </Card>
 
-      {preview.length > 0 && (
-        <>
-          <div className="flex items-center justify-between flex-wrap gap-2">
-            <div>
-              <h2 className="text-2xl font-bold font-display">Weekly Timetable Preview</h2>
-              <p className="text-muted-foreground text-sm">{preview.length} slots • {chosen.length} faculty</p>
-            </div>
-            <Button onClick={persist} className="bg-gradient-accent text-accent-foreground">Save & publish</Button>
-          </div>
+      {preview.length > 0 && (() => {
+        // Derive unique time columns directly from generated slots (sorted)
+        const timeKeys = Array.from(
+          new Set(preview.map((s: any) => `${s.start}-${s.end}`))
+        ).sort();
+        const timeCols = timeKeys.map(k => {
+          const [start, end] = k.split("-");
+          return { start, end, label: `${start} – ${end}` };
+        });
 
-          <Card className="overflow-x-auto p-0">
-            <table className="w-full text-xs border-collapse min-w-[900px]">
-              <thead>
-                <tr className="bg-muted/60">
-                  <th className="border p-2 text-left font-semibold">DAY / TIME</th>
-                  {SLOTS.map((s, idx) => (
-                    <th key={idx} className={`border p-2 font-semibold ${s.kind ? "bg-muted text-muted-foreground" : ""}`}>
-                      {s.label}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {DAYS.slice(0, days).map(d => {
-                  const row = buildRow(d.n);
-                  return (
+        // Index by day -> "start-end" -> slot
+        const byDay: Record<number, Record<string, any>> = {};
+        preview.forEach((s: any) => {
+          const d = DAY_MAP[s.day] ?? 1;
+          (byDay[d] ||= {})[`${s.start}-${s.end}`] = s;
+        });
+
+        return (
+          <>
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div>
+                <h2 className="text-2xl font-bold font-display">Weekly Timetable Preview</h2>
+                <p className="text-muted-foreground text-sm">{preview.length} slots • {chosen.length} faculty</p>
+              </div>
+              <Button onClick={persist} className="bg-gradient-accent text-accent-foreground">Save & publish</Button>
+            </div>
+
+            <Card className="overflow-x-auto p-0">
+              <table className="w-full text-xs border-collapse min-w-[900px]">
+                <thead>
+                  <tr className="bg-muted/60">
+                    <th className="border p-2 text-left font-semibold">DAY / TIME</th>
+                    {timeCols.map((c, idx) => (
+                      <th key={idx} className="border p-2 font-semibold whitespace-nowrap">
+                        {c.label}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {DAYS.slice(0, days).map(d => (
                     <tr key={d.n}>
                       <td className="border p-2 font-semibold bg-muted/30">{d.label}</td>
-                      {(() => {
-                        const tds: React.ReactNode[] = [];
-                        let cellIdx = 0;
-                        SLOTS.forEach((s, idx) => {
-                          if (s.kind) {
-                            tds.push(
-                              <td key={`b-${d.n}-${idx}`} className="border p-1 text-center bg-muted/40 text-muted-foreground italic" style={{ writingMode: "vertical-rl" } as any}>
-                                {s.label}
-                              </td>
-                            );
-                            return;
-                          }
-                          const cell = row[cellIdx];
-                          if (!cell) return;
-                          if ((cell as any)._consumed) return;
-                          const colSpan = cell.span;
-                          for (let k = 1; k < colSpan; k++) {
-                            if (row[cellIdx + k]) (row[cellIdx + k] as any)._consumed = true;
-                          }
-                          if (cell.content) {
-                            tds.push(
-                              <td key={cell.key} colSpan={colSpan} className="border p-2 align-top bg-gradient-primary text-primary-foreground">
-                                <div className="font-bold">{cell.content.subject}</div>
-                                <div className="text-[10px] opacity-90">{cell.content.faculty}</div>
-                                {cell.content.room && <div className="text-[10px] opacity-75 mt-0.5">{cell.content.room}</div>}
-                              </td>
-                            );
-                          } else {
-                            tds.push(<td key={cell.key} className="border p-2 text-center text-muted-foreground">—</td>);
-                          }
-                          cellIdx += colSpan;
-                        });
-                        return tds;
-                      })()}
+                      {timeCols.map((c, idx) => {
+                        const slot = byDay[d.n]?.[`${c.start}-${c.end}`];
+                        if (!slot) {
+                          return <td key={idx} className="border p-2 text-center text-muted-foreground">—</td>;
+                        }
+                        return (
+                          <td key={idx} className="border p-2 align-top bg-gradient-primary text-primary-foreground">
+                            <div className="font-bold">{slot.subject}</div>
+                            <div className="text-[10px] opacity-90">{slot.faculty}</div>
+                            {slot.room && <div className="text-[10px] opacity-75 mt-0.5">{slot.room}</div>}
+                          </td>
+                        );
+                      })}
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </Card>
-        </>
-      )}
+                  ))}
+                </tbody>
+              </table>
+            </Card>
+          </>
+        );
+      })()}
     </div>
   );
 }
