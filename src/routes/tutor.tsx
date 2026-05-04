@@ -142,6 +142,9 @@ function Page() {
           <Button size="icon" variant={listening ? "destructive" : "outline"} onClick={toggleMic} className={listening ? "animate-pulse" : ""}>
             {listening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
           </Button>
+          <Button size="icon" variant={muted ? "destructive" : "outline"} onClick={toggleMute} title={muted ? "Voice muted — tap to unmute" : "Voice on — tap to mute"}>
+            {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+          </Button>
           <Input
             value={input}
             onChange={e=>setInput(e.target.value)}
