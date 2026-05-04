@@ -22,6 +22,8 @@ function Page() {
   const [newCode, setNewCode] = useState(""); const [newName, setNewName] = useState("");
   const [matCourse, setMatCourse] = useState<any>(null);
   const [matTitle, setMatTitle] = useState(""); const [matContent, setMatContent] = useState("");
+  const [matFile, setMatFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   const load = async () => {
     if (role === "student") {
