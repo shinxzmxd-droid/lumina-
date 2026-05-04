@@ -158,3 +158,91 @@ function BrowseAll({ onEnroll, mineIds }: { onEnroll: (id: string) => void; mine
     </Card>
   );
 }
+
+function FacultyMaterials({ courseId }: { courseId: string }) {
+  const [items, setItems] = useState<any[]>([]);
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<any>(null);
+  const [eTitle, setETitle] = useState("");
+  const [eContent, setEContent] = useState("");
+
+  const load = async () => {
+    const { data } = await supabase
+      .from("course_materials")
+      .select("*")
+      .eq("course_id", courseId)
+      .order("created_at", { ascending: false });
+    setItems(data ?? []);
+  };
+  useEffect(() => { if (open) load(); }, [open, courseId]);
+
+  const startEdit = (m: any) => { setEditing(m); setETitle(m.title); setEContent(m.content ?? ""); };
+  const saveEdit = async () => {
+    const { error } = await supabase.from("course_materials")
+      .update({ title: eTitle, content: eContent || null })
+      .eq("id", editing.id);
+    if (error) return toast.error(error.message);
+    toast.success("Updated"); setEditing(null); load();
+  };
+  const remove = async (m: any) => {
+    if (!confirm(`Delete "${m.title}"?`)) return;
+    const { error } = await supabase.from("course_materials").delete().eq("id", m.id);
+    if (error) return toast.error(error.message);
+    toast.success("Deleted"); load();
+  };
+
+  const fileUrl = (m: any) => {
+    if (!m.file_url) return null;
+    return m.file_url.startsWith("http")
+      ? m.file_url
+      : supabase.storage.from("course-materials").getPublicUrl(m.file_url).data.publicUrl;
+  };
+
+  return (
+    <>
+      <Button size="sm" variant="ghost" className="w-full" onClick={() => setOpen(true)}>
+        <Eye className="w-3 h-3 mr-2" /> View materials
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>Course materials</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            {items.length === 0 && <p className="text-sm text-muted-foreground">No materials yet.</p>}
+            {items.map(m => {
+              const url = fileUrl(m);
+              return (
+                <div key={m.id} className="border rounded-lg p-3 flex flex-col sm:flex-row sm:items-start gap-3">
+                  <FileText className="w-5 h-5 text-accent shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium truncate">{m.title}</div>
+                    {m.content && <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{m.content}</p>}
+                  </div>
+                  <div className="flex gap-2 flex-wrap">
+                    {url && (
+                      <Button size="sm" variant="outline" asChild>
+                        <a href={url} target="_blank" rel="noopener noreferrer"><Download className="w-3 h-3 mr-1" />Open</a>
+                      </Button>
+                    )}
+                    <Button size="sm" variant="outline" onClick={() => startEdit(m)}><Pencil className="w-3 h-3" /></Button>
+                    <Button size="sm" variant="destructive" onClick={() => remove(m)}><Trash2 className="w-3 h-3" /></Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Edit material</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div><Label>Title</Label><Input value={eTitle} onChange={e => setETitle(e.target.value)} /></div>
+            <div><Label>Notes</Label><Textarea rows={6} value={eContent} onChange={e => setEContent(e.target.value)} /></div>
+            <Button onClick={saveEdit} className="w-full">Save changes</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
