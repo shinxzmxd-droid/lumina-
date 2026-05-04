@@ -114,28 +114,53 @@ function Page() {
               <Sparkles className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h3 className="font-display font-semibold">AI Attendance Predictor</h3>
-              <p className="text-sm text-muted-foreground">Predicts your next 2 weeks of classes based on timetable + history.</p>
+              <h3 className="font-display font-semibold">"What if I attend every class?" Predictor</h3>
+              <p className="text-sm text-muted-foreground">See your projected attendance % if you attend every scheduled class for the next 2 weeks.</p>
             </div>
           </div>
           <Button onClick={runPrediction} disabled={predicting}>
-            {predicting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Predicting…</> : <><Sparkles className="w-4 h-4 mr-2" /> Predict next 2 weeks</>}
+            {predicting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Calculating…</> : <><Sparkles className="w-4 h-4 mr-2" /> Project next 2 weeks</>}
           </Button>
         </div>
 
         {prediction && (
           <div className="mt-5 space-y-4">
-            <div className="flex items-center gap-4 flex-wrap">
+            <div className="flex items-end gap-6 flex-wrap">
               <div>
-                <div className="text-xs uppercase tracking-wider text-muted-foreground">Predicted overall</div>
-                <div className="text-3xl font-bold font-display">{prediction.overall_predicted_pct}%</div>
+                <div className="text-xs uppercase tracking-wider text-muted-foreground">Current overall</div>
+                <div className="text-2xl font-bold font-display text-muted-foreground">{overallPct}%</div>
+              </div>
+              <div className="text-2xl text-muted-foreground">→</div>
+              <div>
+                <div className="text-xs uppercase tracking-wider text-muted-foreground">Projected overall</div>
+                <div className="text-4xl font-bold font-display text-success">{prediction.overall_predicted_pct}%</div>
               </div>
               <Badge variant={prediction.risk_level === "high" ? "destructive" : "secondary"} className={prediction.risk_level === "low" ? "bg-success text-success-foreground" : ""}>
                 {prediction.risk_level} risk
               </Badge>
             </div>
             <p className="text-sm">{prediction.summary}</p>
+
+            {prediction.per_subject && (
+              <div className="grid sm:grid-cols-2 gap-3">
+                {prediction.per_subject.map((s: any) => (
+                  <div key={s.code} className="rounded-lg bg-background border p-3">
+                    <div className="flex items-center justify-between">
+                      <div className="font-display font-semibold text-sm">{s.code}</div>
+                      <div className="text-xs text-muted-foreground">+{s.upcoming_classes} classes</div>
+                    </div>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-sm text-muted-foreground">{s.current_pct}%</span>
+                      <span className="text-muted-foreground">→</span>
+                      <span className={`text-lg font-bold font-display ${s.projected_pct >= 75 ? "text-success" : "text-destructive"}`}>{s.projected_pct}%</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
             <div className="space-y-3">
+              <div className="text-xs uppercase tracking-wider text-muted-foreground">Upcoming classes you'd attend</div>
               {Object.entries(
                 (prediction.classes ?? []).reduce((acc: Record<string, any[]>, c: any) => {
                   (acc[c.date] ||= []).push(c); return acc;
@@ -151,10 +176,7 @@ function Page() {
                       <div key={i} className="px-3 py-2 flex items-center gap-3 text-sm">
                         <div className="text-xs text-muted-foreground w-24 shrink-0">{c.start?.slice(0,5)}–{c.end?.slice(0,5)}</div>
                         <div className="font-display font-semibold w-20 shrink-0">{c.code}</div>
-                        <div className="flex-1 text-xs text-muted-foreground truncate">{c.reason}</div>
-                        <Badge className={c.prediction === "present" ? "bg-success text-success-foreground" : "bg-destructive text-destructive-foreground"}>
-                          {c.prediction} · {Math.round((c.confidence ?? 0) * 100)}%
-                        </Badge>
+                        <Badge className="ml-auto bg-success text-success-foreground">present</Badge>
                       </div>
                     ))}
                   </div>
