@@ -78,13 +78,30 @@ function Page() {
                       <h3 className="font-medium truncate">{m.title}</h3>
                       {m.content && <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{m.content}</p>}
                       <div className="mt-2 flex gap-2">
-                        {m.file_url && (
-                          <Button asChild size="sm" variant="outline">
-                            <a href={m.file_url} target="_blank" rel="noopener noreferrer">
-                              <Download className="w-3 h-3 mr-1" /> Open PDF
-                            </a>
-                          </Button>
-                        )}
+                        {m.file_url && (() => {
+                          const url = m.file_url.startsWith("http")
+                            ? m.file_url
+                            : supabase.storage.from("course-materials").getPublicUrl(m.file_url).data.publicUrl;
+                          return (
+                            <>
+                              <a
+                                href={url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center px-3 py-1.5 text-xs rounded-md border hover:bg-accent transition"
+                              >
+                                <FileText className="w-3 h-3 mr-1" /> Open
+                              </a>
+                              <a
+                                href={url}
+                                download
+                                className="inline-flex items-center px-3 py-1.5 text-xs rounded-md border hover:bg-accent transition"
+                              >
+                                <Download className="w-3 h-3 mr-1" /> Download
+                              </a>
+                            </>
+                          );
+                        })()}
                       </div>
                     </div>
                   </div>
