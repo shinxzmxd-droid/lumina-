@@ -18,7 +18,10 @@ const Ctx = createContext<AuthCtx>({
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
-  const [role, setRole] = useState<AppRole | null>(null);
+  const [role, setRole] = useState<AppRole | null>(() => {
+    if (typeof window === "undefined") return null;
+    return (localStorage.getItem("lumina:role") as AppRole | null) ?? null;
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -28,6 +31,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setTimeout(() => fetchRole(s.user.id), 0);
       } else {
         setRole(null);
+        if (typeof window !== "undefined") localStorage.removeItem("lumina:role");
       }
     });
     supabase.auth.getSession().then(({ data }) => {
@@ -46,7 +50,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .order("role")
       .limit(1)
       .maybeSingle();
-    setRole((data?.role as AppRole) ?? null);
+    const r = (data?.role as AppRole) ?? null;
+    setRole(r);
+    if (typeof window !== "undefined") {
+      if (r) localStorage.setItem("lumina:role", r);
+      else localStorage.removeItem("lumina:role");
+    }
   };
 
   return (
