@@ -6,10 +6,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { askTutor } from "@/server/ai.functions";
 import { useServerFn } from "@tanstack/react-start";
-import { Mic, MicOff, Send, Volume2, VolumeX, BrainCircuit, Sparkles } from "lucide-react";
+import { Mic, MicOff, Send, Volume2, VolumeX, BrainCircuit, Sparkles, Paperclip, X } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/tutor")({
