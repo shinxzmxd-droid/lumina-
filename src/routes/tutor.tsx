@@ -101,7 +101,8 @@ function Page() {
           text = await f.text();
         } else if (ext === "pdf") {
           try {
-            const pdfjs: any = await import(/* @vite-ignore */ "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.7.76/build/pdf.min.mjs");
+            const url = "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.7.76/build/pdf.min.mjs";
+            const pdfjs: any = await import(/* @vite-ignore */ url);
             pdfjs.GlobalWorkerOptions.workerSrc = "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.7.76/build/pdf.worker.min.mjs";
             const buf = await f.arrayBuffer();
             const doc = await pdfjs.getDocument({ data: buf }).promise;
