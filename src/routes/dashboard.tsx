@@ -300,6 +300,7 @@ function AdminDash() {
           <PastelTile to="/admin/timetable" tone="bg-pastel-lilac" icon={CalendarDays} title="AI Timetable" subtitle="Generate schedule" />
           <PastelTile to="/admin/leaves" tone="bg-pastel-pink" icon={FileText} title="Leave Requests" subtitle="Review & approve" />
         </div>
+        <HolidaysCalendar />
       </div>
     </div>
   );
