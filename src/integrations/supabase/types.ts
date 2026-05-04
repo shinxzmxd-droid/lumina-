@@ -92,25 +92,28 @@ export type Database = {
       }
       course_materials: {
         Row: {
-          content: string
+          content: string | null
           course_id: string
           created_at: string
+          file_url: string | null
           id: string
           title: string
           uploaded_by: string | null
         }
         Insert: {
-          content: string
+          content?: string | null
           course_id: string
           created_at?: string
+          file_url?: string | null
           id?: string
           title: string
           uploaded_by?: string | null
         }
         Update: {
-          content?: string
+          content?: string | null
           course_id?: string
           created_at?: string
+          file_url?: string | null
           id?: string
           title?: string
           uploaded_by?: string | null
@@ -235,6 +238,42 @@ export type Database = {
           id?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      student_leaves: {
+        Row: {
+          course_id: string | null
+          created_at: string
+          end_date: string
+          id: string
+          reason: string
+          reviewed_by: string | null
+          start_date: string
+          status: string
+          student_id: string
+        }
+        Insert: {
+          course_id?: string | null
+          created_at?: string
+          end_date: string
+          id?: string
+          reason: string
+          reviewed_by?: string | null
+          start_date: string
+          status?: string
+          student_id: string
+        }
+        Update: {
+          course_id?: string | null
+          created_at?: string
+          end_date?: string
+          id?: string
+          reason?: string
+          reviewed_by?: string | null
+          start_date?: string
+          status?: string
+          student_id?: string
         }
         Relationships: []
       }

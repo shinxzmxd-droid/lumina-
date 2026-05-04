@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { askTutor } from "@/server/ai.functions";
 import { useServerFn } from "@tanstack/react-start";
-import { Mic, MicOff, Send, Volume2, BrainCircuit, Sparkles } from "lucide-react";
+import { Mic, MicOff, Send, Volume2, VolumeX, BrainCircuit, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/tutor")({
@@ -30,6 +30,7 @@ function Page() {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [listening, setListening] = useState(false);
+  const [muted, setMuted] = useState(false);
   const recRef = useRef<any>(null);
 
   useEffect(() => {
@@ -45,11 +46,22 @@ function Page() {
   }, [courseId]);
 
   const speak = (text: string) => {
-    if (!("speechSynthesis" in window)) return;
+    if (muted || !("speechSynthesis" in window)) return;
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
     u.rate = 1.05; u.pitch = 1;
     window.speechSynthesis.speak(u);
+  };
+
+  const stopSpeaking = () => {
+    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+  };
+
+  const toggleMute = () => {
+    setMuted(m => {
+      if (!m) stopSpeaking();
+      return !m;
+    });
   };
 
   const send = async (q?: string) => {
@@ -129,6 +141,9 @@ function Page() {
         <div className="border-t p-3 flex items-center gap-2 bg-card">
           <Button size="icon" variant={listening ? "destructive" : "outline"} onClick={toggleMic} className={listening ? "animate-pulse" : ""}>
             {listening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+          </Button>
+          <Button size="icon" variant={muted ? "destructive" : "outline"} onClick={toggleMute} title={muted ? "Voice muted — tap to unmute" : "Voice on — tap to mute"}>
+            {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
           </Button>
           <Input
             value={input}

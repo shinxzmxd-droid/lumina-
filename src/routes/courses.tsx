@@ -22,6 +22,8 @@ function Page() {
   const [newCode, setNewCode] = useState(""); const [newName, setNewName] = useState("");
   const [matCourse, setMatCourse] = useState<any>(null);
   const [matTitle, setMatTitle] = useState(""); const [matContent, setMatContent] = useState("");
+  const [matFile, setMatFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   const load = async () => {
     if (role === "student") {
@@ -51,13 +53,31 @@ function Page() {
   };
 
   const uploadMaterial = async () => {
-    if (!matCourse || !matTitle || !matContent) return;
-    const { error } = await supabase.from("course_materials").insert({
-      course_id: matCourse.id, title: matTitle, content: matContent, uploaded_by: user!.id,
-    });
-    if (error) return toast.error(error.message);
-    toast.success("Material uploaded — students can now ask the AI tutor about it");
-    setMatTitle(""); setMatContent(""); setMatCourse(null);
+    if (!matCourse || !matTitle) return toast.error("Title required");
+    if (!matContent && !matFile) return toast.error("Add notes text or attach a PDF");
+    setUploading(true);
+    try {
+      let file_url: string | null = null;
+      if (matFile) {
+        const path = `${matCourse.id}/${Date.now()}-${matFile.name.replace(/[^a-zA-Z0-9._-]/g,"_")}`;
+        const { error: upErr } = await supabase.storage.from("course-materials").upload(path, matFile, {
+          contentType: matFile.type || "application/pdf",
+        });
+        if (upErr) throw upErr;
+        const { data } = supabase.storage.from("course-materials").getPublicUrl(path);
+        file_url = data.publicUrl;
+      }
+      const { error } = await supabase.from("course_materials").insert({
+        course_id: matCourse.id, title: matTitle, content: matContent || null, file_url, uploaded_by: user!.id,
+      });
+      if (error) throw error;
+      toast.success("Material uploaded");
+      setMatTitle(""); setMatContent(""); setMatFile(null); setMatCourse(null);
+    } catch (e: any) {
+      toast.error(e.message ?? "Upload failed");
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
@@ -105,8 +125,13 @@ function Page() {
           <DialogHeader><DialogTitle>Upload material — {matCourse?.name}</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div><Label>Title</Label><Input value={matTitle} onChange={e=>setMatTitle(e.target.value)} placeholder="Chapter 1: Introduction" /></div>
-            <div><Label>Content / syllabus text</Label><Textarea rows={10} value={matContent} onChange={e=>setMatContent(e.target.value)} placeholder="Paste lecture notes, syllabus, or readings here. The AI tutor will ground answers in this." /></div>
-            <Button onClick={uploadMaterial} className="w-full">Save</Button>
+            <div>
+              <Label>Attach PDF (optional)</Label>
+              <Input type="file" accept="application/pdf,.pdf" onChange={e=>setMatFile(e.target.files?.[0] ?? null)} />
+              {matFile && <p className="text-xs text-muted-foreground mt-1">{matFile.name} ({Math.round(matFile.size/1024)} KB)</p>}
+            </div>
+            <div><Label>Notes / syllabus text (optional)</Label><Textarea rows={6} value={matContent} onChange={e=>setMatContent(e.target.value)} placeholder="Paste lecture notes — the AI tutor uses this to ground answers." /></div>
+            <Button onClick={uploadMaterial} disabled={uploading} className="w-full">{uploading ? "Uploading…" : "Save"}</Button>
           </div>
         </DialogContent>
       </Dialog>

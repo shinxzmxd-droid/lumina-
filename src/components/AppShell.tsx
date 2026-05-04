@@ -10,6 +10,7 @@ const navByRole: Record<AppRole, { to: string; label: string; icon: any }[]> = {
     { to: "/attendance", label: "My Attendance", icon: ClipboardCheck },
     { to: "/courses", label: "Courses", icon: BookOpen },
     { to: "/tutor", label: "AI Tutor", icon: BrainCircuit },
+    { to: "/student-leaves", label: "My Leaves", icon: FileText },
     { to: "/timetable", label: "Timetable", icon: Calendar },
   ],
   faculty: [
@@ -17,12 +18,14 @@ const navByRole: Record<AppRole, { to: string; label: string; icon: any }[]> = {
     { to: "/courses", label: "My Courses", icon: BookOpen },
     { to: "/mark-attendance", label: "Mark Attendance", icon: ClipboardCheck },
     { to: "/leaves", label: "My Leaves", icon: FileText },
+    { to: "/faculty-leaves", label: "Student Leaves", icon: FileText },
     { to: "/timetable", label: "Timetable", icon: Calendar },
   ],
   admin: [
     { to: "/dashboard", label: "Campus Overview", icon: LayoutDashboard },
     { to: "/admin/users", label: "Users & Roles", icon: Users },
-    { to: "/admin/leaves", label: "Leave Requests", icon: FileText },
+    { to: "/admin/leaves", label: "Faculty Leaves", icon: FileText },
+    { to: "/faculty-leaves", label: "Student Leaves", icon: FileText },
     { to: "/admin/timetable", label: "Timetable Generator", icon: Sparkles },
     { to: "/admin/courses", label: "Courses", icon: BookOpen },
   ],
