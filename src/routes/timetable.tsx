@@ -112,7 +112,7 @@ function Page() {
                   <tr key={d.n}>
                     <td className="border p-2 font-semibold bg-muted/30">{d.label}</td>
                     {(() => {
-                      const tds: JSX.Element[] = [];
+                      const tds: React.ReactNode[] = [];
                       let cellIdx = 0;
                       SLOTS.forEach((s, idx) => {
                         if (s.kind) {
