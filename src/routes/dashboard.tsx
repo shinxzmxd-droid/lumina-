@@ -197,8 +197,9 @@ function FacultyDash() {
 
         <div className="grid md:grid-cols-2 gap-5">
           <PastelTile to="/mark-attendance" tone="bg-pastel-mint" icon={ClipboardCheck} title="Mark attendance" subtitle="Log today's session quickly" />
-          <PastelTile to="/admin/courses" tone="bg-pastel-lilac" icon={BookOpen} title="My courses" subtitle="Materials & enrollments" />
+          <PastelTile to="/courses" tone="bg-pastel-lilac" icon={BookOpen} title="My courses" subtitle="Materials & enrollments" />
         </div>
+        <HolidaysCalendar />
       </div>
     </div>
   );
