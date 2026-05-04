@@ -6,7 +6,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { AlertTriangle, CheckCircle2, Sparkles, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/attendance")({
   component: () => <RequireAuth roles={["student"]}><Page /></RequireAuth>,
@@ -17,6 +19,8 @@ const MIN_PCT = 75;
 function Page() {
   const { user } = useAuth();
   const [rows, setRows] = useState<any[]>([]);
+  const [predicting, setPredicting] = useState(false);
+  const [prediction, setPrediction] = useState<any | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -42,6 +46,39 @@ function Page() {
   const overallPresent = rows.filter(r => r.present).length;
   const overallPct = overallTotal ? Math.round((overallPresent / overallTotal) * 100) : 0;
 
+  const runPrediction = async () => {
+    if (!user) return;
+    if (bySubject.length === 0) {
+      toast.error("No attendance data yet to predict from");
+      return;
+    }
+    setPredicting(true);
+    try {
+      const courseIds = Array.from(new Set(rows.map(r => r.course_id)));
+      const { data: slots } = await supabase
+        .from("timetable_slots")
+        .select("course_id, courses(code)")
+        .in("course_id", courseIds);
+      const tt: Record<string, number> = {};
+      (slots ?? []).forEach((s: any) => {
+        const code = s.courses?.code ?? "?";
+        tt[code] = (tt[code] ?? 0) + 1;
+      });
+      const subjects = bySubject.map(s => ({ code: s.code, name: s.name, total: s.total, present: s.present, current_pct: s.pct }));
+      const { data, error } = await supabase.functions.invoke("predict-attendance", {
+        body: { subjects, timetable: tt, weeksAhead: 4 },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      setPrediction((data as any).prediction);
+      toast.success("AI prediction ready");
+    } catch (e: any) {
+      toast.error(e.message ?? "Prediction failed");
+    } finally {
+      setPredicting(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -61,6 +98,52 @@ function Page() {
             : <Badge variant="destructive"><AlertTriangle className="w-3 h-3 mr-1" /> Below {MIN_PCT}%</Badge>}
         </div>
         <Progress value={overallPct} className="h-2" />
+      </Card>
+
+      <Card className="p-6 bg-gradient-to-br from-primary/5 to-accent/5 border-primary/20">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div className="flex gap-3">
+            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+              <Sparkles className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-display font-semibold">AI Attendance Predictor</h3>
+              <p className="text-sm text-muted-foreground">Forecasts your next 4 weeks based on timetable + history.</p>
+            </div>
+          </div>
+          <Button onClick={runPrediction} disabled={predicting}>
+            {predicting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Predicting…</> : <><Sparkles className="w-4 h-4 mr-2" /> Predict</>}
+          </Button>
+        </div>
+
+        {prediction && (
+          <div className="mt-5 space-y-4">
+            <div className="flex items-center gap-4 flex-wrap">
+              <div>
+                <div className="text-xs uppercase tracking-wider text-muted-foreground">Predicted overall</div>
+                <div className="text-3xl font-bold font-display">{prediction.overall_predicted_pct}%</div>
+              </div>
+              <Badge variant={prediction.risk_level === "high" ? "destructive" : "secondary"} className={prediction.risk_level === "low" ? "bg-success text-success-foreground" : ""}>
+                {prediction.risk_level} risk
+              </Badge>
+            </div>
+            <p className="text-sm">{prediction.summary}</p>
+            <div className="grid md:grid-cols-2 gap-3">
+              {prediction.per_subject?.map((p: any) => (
+                <div key={p.code} className="p-3 rounded-lg bg-background border">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-display font-semibold text-sm">{p.code}</span>
+                    <span className={`text-sm font-bold ${p.predicted_pct >= 75 ? "text-success" : "text-destructive"}`}>
+                      {p.current_pct}% → {p.predicted_pct}%
+                    </span>
+                  </div>
+                  <div className="text-xs text-muted-foreground mb-1">Attend ≥ {p.classes_to_attend} more classes</div>
+                  <div className="text-xs">{p.advice}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </Card>
 
       <div>
