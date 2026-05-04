@@ -55,23 +55,30 @@ function Page() {
     setPredicting(true);
     try {
       const courseIds = Array.from(new Set(rows.map(r => r.course_id)));
-      const { data: slots } = await supabase
+      const { data: slotsRaw } = await supabase
         .from("timetable_slots")
-        .select("course_id, courses(code)")
+        .select("day_of_week, start_time, end_time, room, course_id, courses(code)")
         .in("course_id", courseIds);
-      const tt: Record<string, number> = {};
-      (slots ?? []).forEach((s: any) => {
-        const code = s.courses?.code ?? "?";
-        tt[code] = (tt[code] ?? 0) + 1;
-      });
+      const slots = (slotsRaw ?? []).map((s: any) => ({
+        day_of_week: s.day_of_week,
+        start_time: s.start_time,
+        end_time: s.end_time,
+        room: s.room,
+        code: s.courses?.code ?? "?",
+      }));
+      if (slots.length === 0) {
+        toast.error("No timetable found for your courses");
+        setPredicting(false);
+        return;
+      }
       const subjects = bySubject.map(s => ({ code: s.code, name: s.name, total: s.total, present: s.present, current_pct: s.pct }));
       const { data, error } = await supabase.functions.invoke("predict-attendance", {
-        body: { subjects, timetable: tt, weeksAhead: 4 },
+        body: { subjects, slots, weeksAhead: 2 },
       });
       if (error) throw error;
       if ((data as any)?.error) throw new Error((data as any).error);
       setPrediction((data as any).prediction);
-      toast.success("AI prediction ready");
+      toast.success("AI forecast ready");
     } catch (e: any) {
       toast.error(e.message ?? "Prediction failed");
     } finally {
@@ -108,11 +115,11 @@ function Page() {
             </div>
             <div>
               <h3 className="font-display font-semibold">AI Attendance Predictor</h3>
-              <p className="text-sm text-muted-foreground">Forecasts your next 4 weeks based on timetable + history.</p>
+              <p className="text-sm text-muted-foreground">Predicts your next 2 weeks of classes based on timetable + history.</p>
             </div>
           </div>
           <Button onClick={runPrediction} disabled={predicting}>
-            {predicting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Predicting…</> : <><Sparkles className="w-4 h-4 mr-2" /> Predict</>}
+            {predicting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Predicting…</> : <><Sparkles className="w-4 h-4 mr-2" /> Predict next 2 weeks</>}
           </Button>
         </div>
 
@@ -128,17 +135,29 @@ function Page() {
               </Badge>
             </div>
             <p className="text-sm">{prediction.summary}</p>
-            <div className="grid md:grid-cols-2 gap-3">
-              {prediction.per_subject?.map((p: any) => (
-                <div key={p.code} className="p-3 rounded-lg bg-background border">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-display font-semibold text-sm">{p.code}</span>
-                    <span className={`text-sm font-bold ${p.predicted_pct >= 75 ? "text-success" : "text-destructive"}`}>
-                      {p.current_pct}% → {p.predicted_pct}%
-                    </span>
+            <div className="space-y-3">
+              {Object.entries(
+                (prediction.classes ?? []).reduce((acc: Record<string, any[]>, c: any) => {
+                  (acc[c.date] ||= []).push(c); return acc;
+                }, {})
+              ).map(([date, items]) => (
+                <div key={date} className="rounded-lg bg-background border overflow-hidden">
+                  <div className="px-3 py-2 bg-muted/50 text-xs font-semibold flex justify-between">
+                    <span>{(items as any[])[0].day}</span>
+                    <span className="text-muted-foreground">{date}</span>
                   </div>
-                  <div className="text-xs text-muted-foreground mb-1">Attend ≥ {p.classes_to_attend} more classes</div>
-                  <div className="text-xs">{p.advice}</div>
+                  <div className="divide-y">
+                    {(items as any[]).map((c, i) => (
+                      <div key={i} className="px-3 py-2 flex items-center gap-3 text-sm">
+                        <div className="text-xs text-muted-foreground w-24 shrink-0">{c.start?.slice(0,5)}–{c.end?.slice(0,5)}</div>
+                        <div className="font-display font-semibold w-20 shrink-0">{c.code}</div>
+                        <div className="flex-1 text-xs text-muted-foreground truncate">{c.reason}</div>
+                        <Badge className={c.prediction === "present" ? "bg-success text-success-foreground" : "bg-destructive text-destructive-foreground"}>
+                          {c.prediction} · {Math.round((c.confidence ?? 0) * 100)}%
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>
