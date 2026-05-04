@@ -19,6 +19,8 @@ const MIN_PCT = 75;
 function Page() {
   const { user } = useAuth();
   const [rows, setRows] = useState<any[]>([]);
+  const [predicting, setPredicting] = useState(false);
+  const [prediction, setPrediction] = useState<any | null>(null);
 
   useEffect(() => {
     if (!user) return;
