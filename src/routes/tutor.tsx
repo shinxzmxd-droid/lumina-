@@ -30,6 +30,7 @@ function Page() {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [listening, setListening] = useState(false);
+  const [muted, setMuted] = useState(false);
   const recRef = useRef<any>(null);
 
   useEffect(() => {
@@ -45,11 +46,22 @@ function Page() {
   }, [courseId]);
 
   const speak = (text: string) => {
-    if (!("speechSynthesis" in window)) return;
+    if (muted || !("speechSynthesis" in window)) return;
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
     u.rate = 1.05; u.pitch = 1;
     window.speechSynthesis.speak(u);
+  };
+
+  const stopSpeaking = () => {
+    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+  };
+
+  const toggleMute = () => {
+    setMuted(m => {
+      if (!m) stopSpeaking();
+      return !m;
+    });
   };
 
   const send = async (q?: string) => {
