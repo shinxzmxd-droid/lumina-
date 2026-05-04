@@ -82,23 +82,38 @@ function Page() {
                           const url = m.file_url.startsWith("http")
                             ? m.file_url
                             : supabase.storage.from("course-materials").getPublicUrl(m.file_url).data.publicUrl;
+                          const filename = url.split("/").pop()?.split("?")[0] ?? "file";
+                          const openInNewTab = () => {
+                            const w = window.open(url, "_blank", "noopener,noreferrer");
+                            if (!w) {
+                              // popup blocked: navigate top frame instead
+                              window.top ? (window.top.location.href = url) : (window.location.href = url);
+                            }
+                          };
+                          const downloadFile = async () => {
+                            try {
+                              const res = await fetch(url);
+                              const blob = await res.blob();
+                              const blobUrl = URL.createObjectURL(blob);
+                              const a = document.createElement("a");
+                              a.href = blobUrl;
+                              a.download = filename;
+                              document.body.appendChild(a);
+                              a.click();
+                              a.remove();
+                              setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+                            } catch {
+                              openInNewTab();
+                            }
+                          };
                           return (
                             <>
-                              <a
-                                href={url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center px-3 py-1.5 text-xs rounded-md border hover:bg-accent transition"
-                              >
+                              <Button size="sm" variant="outline" onClick={openInNewTab}>
                                 <FileText className="w-3 h-3 mr-1" /> Open
-                              </a>
-                              <a
-                                href={url}
-                                download
-                                className="inline-flex items-center px-3 py-1.5 text-xs rounded-md border hover:bg-accent transition"
-                              >
+                              </Button>
+                              <Button size="sm" variant="outline" onClick={downloadFile}>
                                 <Download className="w-3 h-3 mr-1" /> Download
-                              </a>
+                              </Button>
                             </>
                           );
                         })()}
