@@ -74,7 +74,9 @@ function Page() {
     setMessages(m => [...m, { role: "user", text }]);
     setInput(""); setBusy(true);
     try {
-      const ctx = materials.map(m => `# ${m.title}\n${m.content}`).join("\n\n");
+      const courseCtx = materials.map(m => `# ${m.title}\n${m.content ?? ""}`).join("\n\n");
+      const myCtx = myFiles.map(f => `# (Student upload) ${f.name}\n${f.text}`).join("\n\n");
+      const ctx = [courseCtx, myCtx].filter(Boolean).join("\n\n");
       const courseName = courses.find(c => c.id === courseId)?.name ?? "";
       const { answer } = await ask({ data: { question: text, context: ctx, courseName } });
       setMessages(m => [...m, { role: "assistant", text: answer }]);
@@ -86,6 +88,52 @@ function Page() {
       setBusy(false);
     }
   };
+
+  const handleFiles = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    setParsing(true);
+    try {
+      const out: { name: string; text: string }[] = [];
+      for (const f of Array.from(files)) {
+        const ext = f.name.toLowerCase().split(".").pop() ?? "";
+        let text = "";
+        if (["txt","md","csv","json"].includes(ext)) {
+          text = await f.text();
+        } else if (ext === "pdf") {
+          try {
+            const pdfjs: any = await import(/* @vite-ignore */ "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.7.76/build/pdf.min.mjs");
+            pdfjs.GlobalWorkerOptions.workerSrc = "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.7.76/build/pdf.worker.min.mjs";
+            const buf = await f.arrayBuffer();
+            const doc = await pdfjs.getDocument({ data: buf }).promise;
+            const parts: string[] = [];
+            const maxPages = Math.min(doc.numPages, 30);
+            for (let i = 1; i <= maxPages; i++) {
+              const page = await doc.getPage(i);
+              const content = await page.getTextContent();
+              parts.push(content.items.map((it: any) => it.str).join(" "));
+            }
+            text = parts.join("\n\n");
+          } catch {
+            text = `(PDF "${f.name}" attached — extraction failed; ask the AI about it by name.)`;
+          }
+        } else if (["ppt","pptx","doc","docx"].includes(ext)) {
+          text = `(Slides/document "${f.name}" attached — describe what you want help with.)`;
+        } else {
+          text = `(File "${f.name}" attached.)`;
+        }
+        out.push({ name: f.name, text: text.slice(0, 12000) });
+      }
+      setMyFiles(prev => [...prev, ...out]);
+      toast.success(`Added ${out.length} file(s) to AI context`);
+    } catch (e: any) {
+      toast.error(e.message ?? "Could not read file");
+    } finally {
+      setParsing(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
+
+  const removeFile = (i: number) => setMyFiles(prev => prev.filter((_, idx) => idx !== i));
 
   const toggleMic = () => {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
