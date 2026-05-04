@@ -6,7 +6,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, PieChart, Pie, Cell, LineChart, Line } from "recharts";
-import { Users, BookOpen, ClipboardCheck, Sparkles, FileText, TrendingUp } from "lucide-react";
+import { Users, BookOpen, ClipboardCheck, Sparkles, FileText, TrendingUp, ArrowUpRight, CalendarDays, Mic } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/dashboard")({
   component: () => <RequireAuth><DashboardRouter /></RequireAuth>,
@@ -69,33 +70,70 @@ function StudentDash() {
   const courseChart = Object.values(byCourse).map(c => ({ name: c.name, attendance: Math.round((c.present/c.total)*100) }));
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold font-display">Hi there 👋</h1>
-        <p className="text-muted-foreground">Here's your learning snapshot.</p>
+    <div className="-m-4 md:-m-6 lg:-m-8 p-6 md:p-10 min-h-[calc(100vh-4rem)] bg-pastel-cream text-pastel-ink">
+      <div className="max-w-7xl mx-auto flex flex-col gap-8">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold font-display">Welcome Back 👋</h1>
+            <p className="text-pastel-muted mt-1">Here's your learning snapshot.</p>
+          </div>
+          <div className="hidden md:flex items-center gap-3 bg-white rounded-2xl px-5 py-3 shadow-sm">
+            <div className="text-xs uppercase tracking-wider text-pastel-muted">Attendance</div>
+            <div className="text-2xl font-bold">{pct}%</div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <PastelTile to="/attendance" tone="bg-pastel-yellow" icon={ClipboardCheck} title="Attendance" subtitle={`${present}/${total} sessions · ${pct}%`} />
+          <PastelTile to="/timetable" tone="bg-pastel-mint" icon={CalendarDays} title="Timetable" subtitle="View your weekly schedule" />
+          <PastelTile to="/courses" tone="bg-pastel-lilac" icon={BookOpen} title="Materials" subtitle={`${courses.length} enrolled courses`} />
+          <PastelTile to="/tutor" tone="bg-pastel-pink" icon={Mic} title="AI Tutor" subtitle="Voice + chat ready" />
+        </div>
+
+        <div className="bg-white rounded-3xl p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-display text-xl font-bold">Attendance by course</h3>
+            <span className={`text-xs px-3 py-1 rounded-full ${pct>=75 ? "bg-pastel-mint" : "bg-pastel-pink"}`}>
+              {pct >= 75 ? "On track" : "At risk"}
+            </span>
+          </div>
+          {courseChart.length === 0 ? (
+            <p className="text-sm text-pastel-muted">No attendance recorded yet.</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={260}>
+              <BarChart data={courseChart}>
+                <XAxis dataKey="name" stroke="currentColor" opacity={0.5} />
+                <YAxis stroke="currentColor" opacity={0.5} />
+                <Tooltip />
+                <Bar dataKey="attendance" fill="oklch(0.78 0.12 295)" radius={[12,12,0,0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
       </div>
-      <div className="grid md:grid-cols-4 gap-4">
-        <StatCard icon={ClipboardCheck} label="Attendance" value={`${pct}%`} hint={`${present}/${total} sessions`} accent="bg-success/10 text-success" />
-        <StatCard icon={BookOpen} label="Enrolled courses" value={courses.length} accent="bg-primary/10 text-primary" />
-        <StatCard icon={Sparkles} label="AI tutor" value="Ready" hint="Voice + chat" accent="bg-accent/20 text-accent-foreground" />
-        <StatCard icon={TrendingUp} label="Status" value={pct >= 75 ? "On track" : "At risk"} accent={pct>=75 ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"} />
-      </div>
-      <Card className="p-6">
-        <h3 className="font-display font-semibold mb-4">Attendance by course</h3>
-        {courseChart.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No attendance recorded yet.</p>
-        ) : (
-          <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={courseChart}>
-              <XAxis dataKey="name" stroke="currentColor" opacity={0.5} />
-              <YAxis stroke="currentColor" opacity={0.5} />
-              <Tooltip />
-              <Bar dataKey="attendance" fill="oklch(0.55 0.18 220)" radius={[8,8,0,0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        )}
-      </Card>
     </div>
+  );
+}
+
+function PastelTile({ to, tone, icon: Icon, title, subtitle }: { to: string; tone: string; icon: any; title: string; subtitle: string }) {
+  return (
+    <Link to={to} className={`group relative ${tone} rounded-3xl p-6 shadow-sm hover:shadow-lg transition-shadow duration-300 flex flex-col gap-6 min-h-[160px]`}>
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-full bg-white/60 grid place-items-center">
+          <Icon className="w-5 h-5 text-pastel-ink" />
+        </div>
+        <span className="text-xs uppercase tracking-wider text-pastel-ink/60">Open</span>
+      </div>
+      <div className="mt-auto flex items-end justify-between">
+        <div>
+          <h3 className="text-xl font-bold font-display text-pastel-ink">{title}</h3>
+          <p className="text-sm text-pastel-ink/70 mt-1">{subtitle}</p>
+        </div>
+        <div className="w-9 h-9 rounded-full bg-pastel-ink text-white grid place-items-center group-hover:scale-110 transition-transform">
+          <ArrowUpRight className="w-4 h-4" />
+        </div>
+      </div>
+    </Link>
   );
 }
 
