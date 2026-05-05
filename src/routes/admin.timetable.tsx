@@ -126,20 +126,50 @@ function Page() {
   };
 
   const persist = async () => {
+    // Build faculty name -> user_id map (case-insensitive, fuzzy on substring)
+    const { data: facultyRoles } = await supabase.from("user_roles").select("user_id").eq("role", "faculty");
+    const facIds = (facultyRoles ?? []).map((r: any) => r.user_id);
+    const { data: facProfiles } = facIds.length
+      ? await supabase.from("profiles").select("user_id, full_name").in("user_id", facIds)
+      : { data: [] as any[] };
+
+    const matchFaculty = (name: string): string | null => {
+      const n = (name ?? "").toLowerCase().trim();
+      if (!n) return null;
+      const exact = (facProfiles ?? []).find((p: any) => p.full_name?.toLowerCase() === n);
+      if (exact) return exact.user_id;
+      const partial = (facProfiles ?? []).find((p: any) => {
+        const fn = p.full_name?.toLowerCase() ?? "";
+        return fn.includes(n) || n.includes(fn);
+      });
+      return partial?.user_id ?? null;
+    };
+
     const { data: existing } = await supabase.from("courses").select("*");
-    const byName: Record<string, string> = {};
-    (existing ?? []).forEach((c: any) => { byName[c.name.toLowerCase()] = c.id; });
+    const byName: Record<string, any> = {};
+    (existing ?? []).forEach((c: any) => { byName[c.name.toLowerCase()] = c; });
 
     const inserts: any[] = [];
+    let unmatched = 0;
     for (const s of preview) {
-      let cid = byName[s.subject?.toLowerCase()];
-      if (!cid) {
+      const facultyId = matchFaculty(s.faculty);
+      if (!facultyId) unmatched++;
+
+      let course = byName[s.subject?.toLowerCase()];
+      if (!course) {
         const code = s.subject.split(" ").map((w: string) => w[0]).join("").toUpperCase().slice(0, 4) + Math.floor(100 + Math.random() * 900);
-        const { data: nc } = await supabase.from("courses").insert({ name: s.subject, code }).select().single();
-        if (nc) { cid = nc.id; byName[s.subject.toLowerCase()] = cid; }
+        const { data: nc } = await supabase.from("courses")
+          .insert({ name: s.subject, code, faculty_id: facultyId })
+          .select().single();
+        if (nc) { course = nc; byName[s.subject.toLowerCase()] = nc; }
+      } else if (facultyId && course.faculty_id !== facultyId) {
+        // assign existing course to matched faculty
+        await supabase.from("courses").update({ faculty_id: facultyId }).eq("id", course.id);
+        course.faculty_id = facultyId;
       }
-      if (cid) inserts.push({
-        course_id: cid,
+
+      if (course?.id) inserts.push({
+        course_id: course.id,
         day_of_week: DAY_MAP[s.day] ?? 1,
         start_time: s.start, end_time: s.end, room: s.room ?? "R-101",
       });
@@ -147,7 +177,11 @@ function Page() {
     await supabase.from("timetable_slots").delete().neq("id", "00000000-0000-0000-0000-000000000000");
     const { error } = await supabase.from("timetable_slots").insert(inserts);
     if (error) return toast.error(error.message);
-    toast.success("Timetable saved & live across the campus");
+    toast.success(
+      unmatched
+        ? `Saved. ${inserts.length} slots assigned. ${unmatched} slot(s) had no matching faculty profile — courses created without owner.`
+        : `Saved. All ${inserts.length} slots assigned to matching faculty.`
+    );
   };
 
   // Build cells per day (with column-span for consecutive same-subject blocks)
