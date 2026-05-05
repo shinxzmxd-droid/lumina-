@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, XCircle, Upload, Download, Trash2 } from "lucide-react";
+import { CheckCircle2, XCircle, Upload, Download } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/mark-attendance")({
