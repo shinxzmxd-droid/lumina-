@@ -40,9 +40,8 @@ function Page() {
     const ids = (data ?? []).map((g: any) => g.id);
     if (ids.length) {
       const { data: m } = await supabase.from("class_group_members")
-        .select("id, class_group_id, student_id, profiles:profiles!class_group_members_student_id_fkey(full_name)")
+        .select("id, class_group_id, student_id")
         .in("class_group_id", ids);
-      // fall back to manual join since FK may not be declared
       const byGroup: Record<string, any[]> = {};
       for (const row of (m ?? [])) (byGroup[row.class_group_id] ||= []).push(row);
       setMembers(byGroup);
