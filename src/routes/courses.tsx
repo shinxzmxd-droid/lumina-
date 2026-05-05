@@ -22,6 +22,7 @@ function Page() {
   const [courses, setCourses] = useState<any[]>([]);
   const [newCode, setNewCode] = useState(""); const [newName, setNewName] = useState("");
   const [classGroups, setClassGroups] = useState<any[]>([]);
+  const [newSemester, setNewSemester] = useState<string>("any");
   const [newClassId, setNewClassId] = useState<string>("none");
   const [createOpen, setCreateOpen] = useState(false);
   const [matCourse, setMatCourse] = useState<any>(null);
