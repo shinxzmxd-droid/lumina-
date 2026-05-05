@@ -42,16 +42,40 @@ function findSlot(slots: any[], day: number, slot: { start: string; end: string 
 }
 
 function Page() {
+  const { user, role } = useAuth();
   const [slots, setSlots] = useState<any[]>([]);
-  const [room, setRoom] = useState("306");
+  const [groupName, setGroupName] = useState<string>("");
 
   useEffect(() => {
-    supabase.from("timetable_slots").select("*, courses(code, name)").order("day_of_week").order("start_time").then(({data})=>{
+    if (!user) return;
+    (async () => {
+      // Determine which class groups apply to the current user
+      let classIds: string[] = [];
+      if (role === "student") {
+        const { data: m } = await supabase.from("class_group_members")
+          .select("class_group_id, class_groups(name, semester)")
+          .eq("student_id", user.id);
+        classIds = (m ?? []).map((r: any) => r.class_group_id);
+        const first = (m ?? [])[0]?.class_groups;
+        if (first) setGroupName(`${first.name} • ${first.semester}`);
+      } else if (role === "faculty") {
+        const { data: g } = await supabase.from("class_groups")
+          .select("id, name, semester").eq("faculty_id", user.id);
+        classIds = (g ?? []).map((r: any) => r.id);
+        const first = (g ?? [])[0];
+        if (first) setGroupName(`${first.name} • ${first.semester}`);
+      }
+
+      let q = supabase.from("timetable_slots")
+        .select("*, courses(code, name), class_groups(name, semester)")
+        .order("day_of_week").order("start_time");
+      if (classIds.length && role !== "admin") {
+        q = q.in("class_group_id", classIds);
+      }
+      const { data } = await q;
       setSlots(data ?? []);
-      const r = (data ?? []).find((s: any) => s.room && s.room.match(/\d/));
-      if (r?.room) setRoom(r.room);
-    });
-  }, []);
+    })();
+  }, [user, role]);
 
   const periodSlots = useMemo(() => SLOTS.filter(s => !s.kind), []);
 
