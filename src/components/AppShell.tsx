@@ -2,7 +2,7 @@ import { Link, useNavigate, useLocation } from "@tanstack/react-router";
 import { useAuth, AppRole } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { GraduationCap, LayoutDashboard, Users, Calendar, BookOpen, LogOut, Sparkles, ClipboardCheck, FileText, BrainCircuit, Menu } from "lucide-react";
+import { GraduationCap, LayoutDashboard, Users, Calendar, BookOpen, LogOut, Sparkles, ClipboardCheck, FileText, BrainCircuit, Menu, Megaphone } from "lucide-react";
 import { ReactNode, useState } from "react";
 
 const navByRole: Record<AppRole, { to: string; label: string; icon: any }[]> = {
@@ -14,6 +14,7 @@ const navByRole: Record<AppRole, { to: string; label: string; icon: any }[]> = {
     { to: "/tutor", label: "AI Tutor", icon: BrainCircuit },
     { to: "/student-leaves", label: "My Leaves", icon: FileText },
     { to: "/timetable", label: "Timetable", icon: Calendar },
+    { to: "/announcements", label: "Announcements", icon: Megaphone },
   ],
   faculty: [
     { to: "/dashboard", label: "Overview", icon: LayoutDashboard },
@@ -24,6 +25,7 @@ const navByRole: Record<AppRole, { to: string; label: string; icon: any }[]> = {
     { to: "/leaves", label: "My Leaves", icon: FileText },
     { to: "/faculty-leaves", label: "Student Leaves", icon: FileText },
     { to: "/timetable", label: "Timetable", icon: Calendar },
+    { to: "/announcements", label: "Announcements", icon: Megaphone },
   ],
   admin: [
     { to: "/dashboard", label: "Campus Overview", icon: LayoutDashboard },
@@ -31,6 +33,7 @@ const navByRole: Record<AppRole, { to: string; label: string; icon: any }[]> = {
     { to: "/admin/leaves", label: "Faculty Leaves", icon: FileText },
     { to: "/admin/timetable", label: "Timetable Generator", icon: Sparkles },
     { to: "/admin/courses", label: "Courses", icon: BookOpen },
+    { to: "/announcements", label: "Announcements", icon: Megaphone },
   ],
 };
 
