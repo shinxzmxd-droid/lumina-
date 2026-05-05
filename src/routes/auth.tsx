@@ -48,7 +48,7 @@ function AuthPage() {
     });
     setBusy(false);
     if (error) return toast.error(error.message);
-    toast.success("Account created — check your inbox to verify, or sign in.");
+    toast.success("Account created — pending admin approval. You can sign in once approved.");
   };
 
   return (
