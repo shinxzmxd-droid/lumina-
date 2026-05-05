@@ -120,6 +120,68 @@ function StudentDash() {
             </ResponsiveContainer>
           )}
         </div>
+        <div className="grid lg:grid-cols-2 gap-5">
+          <div className="bg-white rounded-3xl p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-display text-xl font-bold flex items-center gap-2">
+                <span className="w-9 h-9 rounded-xl bg-pastel-pink grid place-items-center"><Megaphone className="w-4 h-4 text-pastel-ink" /></span>
+                Announcements
+              </h3>
+              <span className="text-xs text-pastel-muted">{announcements.length} latest</span>
+            </div>
+            {announcements.length === 0 ? (
+              <p className="text-sm text-pastel-muted">No announcements yet.</p>
+            ) : (
+              <ul className="space-y-3">
+                {announcements.map(a => (
+                  <li key={a.id} className="flex gap-3 p-3 rounded-2xl bg-pastel-cream/60">
+                    <div className="w-10 h-10 rounded-xl bg-pastel-lilac grid place-items-center shrink-0"><Megaphone className="w-4 h-4 text-pastel-ink" /></div>
+                    <div className="min-w-0">
+                      <div className="font-semibold truncate">{a.title}</div>
+                      {a.body && <div className="text-sm text-pastel-muted line-clamp-2">{a.body}</div>}
+                      <div className="text-xs text-pastel-muted/80 mt-1">{new Date(a.created_at).toLocaleDateString()}</div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <div className="bg-white rounded-3xl p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-display text-xl font-bold flex items-center gap-2">
+                <span className="w-9 h-9 rounded-xl bg-pastel-mint grid place-items-center"><CalendarHeart className="w-4 h-4 text-pastel-ink" /></span>
+                Upcoming Events
+              </h3>
+              <span className="text-xs text-pastel-muted">{events.length} upcoming</span>
+            </div>
+            {events.length === 0 ? (
+              <p className="text-sm text-pastel-muted">No upcoming events.</p>
+            ) : (
+              <ul className="space-y-3">
+                {events.map(e => {
+                  const d = new Date(e.event_date);
+                  return (
+                    <li key={e.id} className="flex items-center gap-3 p-3 rounded-2xl bg-pastel-cream/60">
+                      <div className="w-12 h-12 rounded-xl bg-pastel-yellow grid place-items-center shrink-0 text-pastel-ink leading-tight">
+                        <div className="text-center">
+                          <div className="text-base font-bold">{d.getDate()}</div>
+                          <div className="text-[10px] uppercase">{d.toLocaleString(undefined,{month:"short"})}</div>
+                        </div>
+                      </div>
+                      <div className="min-w-0">
+                        <div className="font-semibold truncate">{e.title}</div>
+                        {e.location && <div className="text-sm text-pastel-muted">{e.location}</div>}
+                        {e.description && <div className="text-xs text-pastel-muted/80 line-clamp-1">{e.description}</div>}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+        </div>
+
         <HolidaysCalendar />
       </div>
     </div>
