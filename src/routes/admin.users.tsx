@@ -74,11 +74,20 @@ function Page() {
     if (names.length === 0) return toast.error("Add at least one name");
     setSeedBusy(true);
     try {
-      const r = await adminSeedFaculty({ data: { names, password: seedPassword, domain: seedDomain } });
-      setSeedResult(r);
-      toast.success(`Created ${r.created.length} faculty${r.skipped.length ? `, skipped ${r.skipped.length}` : ""}`);
+      const r: any = await adminSeedFaculty({ data: { names, password: seedPassword, domain: seedDomain } });
+      console.log("[seedFaculty] response:", r);
+      const safe = {
+        created: Array.isArray(r?.created) ? r.created : [],
+        skipped: Array.isArray(r?.skipped) ? r.skipped : [],
+        password: r?.password ?? seedPassword,
+      };
+      setSeedResult(safe);
+      toast.success(`Created ${safe.created.length} faculty${safe.skipped.length ? `, skipped ${safe.skipped.length}` : ""}`);
       load();
-    } catch (e: any) { toast.error(e.message); }
+    } catch (e: any) {
+      console.error("[seedFaculty] error:", e);
+      toast.error(e?.message || "Failed to seed faculty");
+    }
     finally { setSeedBusy(false); }
   };
 
