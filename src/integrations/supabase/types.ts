@@ -90,6 +90,59 @@ export type Database = {
           },
         ]
       }
+      class_group_members: {
+        Row: {
+          class_group_id: string
+          created_at: string
+          id: string
+          student_id: string
+        }
+        Insert: {
+          class_group_id: string
+          created_at?: string
+          id?: string
+          student_id: string
+        }
+        Update: {
+          class_group_id?: string
+          created_at?: string
+          id?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_group_members_class_group_id_fkey"
+            columns: ["class_group_id"]
+            isOneToOne: false
+            referencedRelation: "class_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      class_groups: {
+        Row: {
+          created_at: string
+          faculty_id: string
+          id: string
+          name: string
+          semester: string
+        }
+        Insert: {
+          created_at?: string
+          faculty_id: string
+          id?: string
+          name: string
+          semester: string
+        }
+        Update: {
+          created_at?: string
+          faculty_id?: string
+          id?: string
+          name?: string
+          semester?: string
+        }
+        Relationships: []
+      }
       course_materials: {
         Row: {
           content: string | null
@@ -217,6 +270,7 @@ export type Database = {
       profiles: {
         Row: {
           approved: boolean
+          assigned_faculty_id: string | null
           avatar_url: string | null
           created_at: string
           full_name: string
@@ -226,6 +280,7 @@ export type Database = {
         }
         Insert: {
           approved?: boolean
+          assigned_faculty_id?: string | null
           avatar_url?: string | null
           created_at?: string
           full_name?: string
@@ -235,6 +290,7 @@ export type Database = {
         }
         Update: {
           approved?: boolean
+          assigned_faculty_id?: string | null
           avatar_url?: string | null
           created_at?: string
           full_name?: string
