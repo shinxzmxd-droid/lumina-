@@ -178,7 +178,14 @@ function Page() {
           <Card key={c.id} className="p-5 shadow-elegant hover:shadow-glow transition-shadow">
             <div className="flex items-start justify-between mb-2">
               <div className="w-10 h-10 rounded-lg bg-gradient-primary grid place-items-center"><BookOpen className="w-5 h-5 text-primary-foreground" /></div>
-              <span className="text-xs text-muted-foreground">{c.code}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">{c.code}</span>
+                {role !== "student" && (
+                  <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => deleteCourse(c)}>
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
             </div>
             <h3 className="font-display font-semibold mb-1">{c.name}</h3>
             {c.description && <p className="text-sm text-muted-foreground mb-3">{c.description}</p>}
