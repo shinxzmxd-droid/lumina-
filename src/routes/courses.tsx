@@ -21,6 +21,9 @@ function Page() {
   const { user, role } = useAuth();
   const [courses, setCourses] = useState<any[]>([]);
   const [newCode, setNewCode] = useState(""); const [newName, setNewName] = useState("");
+  const [classGroups, setClassGroups] = useState<any[]>([]);
+  const [newClassId, setNewClassId] = useState<string>("none");
+  const [createOpen, setCreateOpen] = useState(false);
   const [matCourse, setMatCourse] = useState<any>(null);
   const [matTitle, setMatTitle] = useState(""); const [matContent, setMatContent] = useState("");
   const [matFile, setMatFile] = useState<File | null>(null);
@@ -33,6 +36,8 @@ function Page() {
     } else if (role === "faculty") {
       const { data } = await supabase.from("courses").select("*").eq("faculty_id", user!.id);
       setCourses(data ?? []);
+      const { data: g } = await supabase.from("class_groups").select("*").eq("faculty_id", user!.id).order("created_at", { ascending: false });
+      setClassGroups(g ?? []);
     } else {
       const { data } = await supabase.from("courses").select("*");
       setCourses(data ?? []);
@@ -42,9 +47,24 @@ function Page() {
 
   const createCourse = async () => {
     if (!newCode || !newName) return;
-    const { error } = await supabase.from("courses").insert({ code: newCode, name: newName, faculty_id: user!.id });
+    const { data: created, error } = await supabase.from("courses")
+      .insert({ code: newCode, name: newName, faculty_id: user!.id })
+      .select("id").single();
     if (error) return toast.error(error.message);
-    toast.success("Course created"); setNewCode(""); setNewName(""); load();
+
+    let enrolled = 0;
+    if (newClassId && newClassId !== "none" && created) {
+      const { data: members } = await supabase.from("class_group_members")
+        .select("student_id").eq("class_group_id", newClassId);
+      const rows = (members ?? []).map((m: any) => ({ course_id: created.id, student_id: m.student_id }));
+      if (rows.length) {
+        const { error: enErr } = await supabase.from("enrollments").insert(rows);
+        if (enErr) toast.error(`Course created, but enrollment failed: ${enErr.message}`);
+        else enrolled = rows.length;
+      }
+    }
+    toast.success(enrolled ? `Course created · ${enrolled} students enrolled` : "Course created");
+    setNewCode(""); setNewName(""); setNewClassId("none"); setCreateOpen(false); load();
   };
 
   const enroll = async (cid: string) => {
