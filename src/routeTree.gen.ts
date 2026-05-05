@@ -23,6 +23,7 @@ import { Route as AttendanceRouteImport } from './routes/attendance'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as FacultyTimetableRouteImport } from './routes/faculty.timetable'
 import { Route as FacultyStudentsRouteImport } from './routes/faculty.students'
+import { Route as FacultyOnboardingRouteImport } from './routes/faculty.onboarding'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminTimetableRouteImport } from './routes/admin.timetable'
 import { Route as AdminLeavesRouteImport } from './routes/admin.leaves'
@@ -98,6 +99,11 @@ const FacultyStudentsRoute = FacultyStudentsRouteImport.update({
   path: '/faculty/students',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FacultyOnboardingRoute = FacultyOnboardingRouteImport.update({
+  id: '/faculty/onboarding',
+  path: '/faculty/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
   id: '/admin/users',
   path: '/admin/users',
@@ -136,6 +142,7 @@ export interface FileRoutesByFullPath {
   '/admin/leaves': typeof AdminLeavesRoute
   '/admin/timetable': typeof AdminTimetableRoute
   '/admin/users': typeof AdminUsersRoute
+  '/faculty/onboarding': typeof FacultyOnboardingRoute
   '/faculty/students': typeof FacultyStudentsRoute
   '/faculty/timetable': typeof FacultyTimetableRoute
 }
@@ -156,6 +163,7 @@ export interface FileRoutesByTo {
   '/admin/leaves': typeof AdminLeavesRoute
   '/admin/timetable': typeof AdminTimetableRoute
   '/admin/users': typeof AdminUsersRoute
+  '/faculty/onboarding': typeof FacultyOnboardingRoute
   '/faculty/students': typeof FacultyStudentsRoute
   '/faculty/timetable': typeof FacultyTimetableRoute
 }
@@ -177,6 +185,7 @@ export interface FileRoutesById {
   '/admin/leaves': typeof AdminLeavesRoute
   '/admin/timetable': typeof AdminTimetableRoute
   '/admin/users': typeof AdminUsersRoute
+  '/faculty/onboarding': typeof FacultyOnboardingRoute
   '/faculty/students': typeof FacultyStudentsRoute
   '/faculty/timetable': typeof FacultyTimetableRoute
 }
@@ -199,6 +208,7 @@ export interface FileRouteTypes {
     | '/admin/leaves'
     | '/admin/timetable'
     | '/admin/users'
+    | '/faculty/onboarding'
     | '/faculty/students'
     | '/faculty/timetable'
   fileRoutesByTo: FileRoutesByTo
@@ -219,6 +229,7 @@ export interface FileRouteTypes {
     | '/admin/leaves'
     | '/admin/timetable'
     | '/admin/users'
+    | '/faculty/onboarding'
     | '/faculty/students'
     | '/faculty/timetable'
   id:
@@ -239,6 +250,7 @@ export interface FileRouteTypes {
     | '/admin/leaves'
     | '/admin/timetable'
     | '/admin/users'
+    | '/faculty/onboarding'
     | '/faculty/students'
     | '/faculty/timetable'
   fileRoutesById: FileRoutesById
@@ -260,6 +272,7 @@ export interface RootRouteChildren {
   AdminLeavesRoute: typeof AdminLeavesRoute
   AdminTimetableRoute: typeof AdminTimetableRoute
   AdminUsersRoute: typeof AdminUsersRoute
+  FacultyOnboardingRoute: typeof FacultyOnboardingRoute
   FacultyStudentsRoute: typeof FacultyStudentsRoute
   FacultyTimetableRoute: typeof FacultyTimetableRoute
 }
@@ -364,6 +377,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FacultyStudentsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/faculty/onboarding': {
+      id: '/faculty/onboarding'
+      path: '/faculty/onboarding'
+      fullPath: '/faculty/onboarding'
+      preLoaderRoute: typeof FacultyOnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/users': {
       id: '/admin/users'
       path: '/admin/users'
@@ -412,6 +432,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminLeavesRoute: AdminLeavesRoute,
   AdminTimetableRoute: AdminTimetableRoute,
   AdminUsersRoute: AdminUsersRoute,
+  FacultyOnboardingRoute: FacultyOnboardingRoute,
   FacultyStudentsRoute: FacultyStudentsRoute,
   FacultyTimetableRoute: FacultyTimetableRoute,
 }

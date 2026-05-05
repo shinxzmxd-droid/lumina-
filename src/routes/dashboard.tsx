@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, PieChart, Pie, Cell, LineChart, Line } from "recharts";
 import { Users, BookOpen, ClipboardCheck, Sparkles, FileText, TrendingUp, ArrowUpRight, CalendarDays, Mic } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { HolidaysCalendar } from "@/components/HolidaysCalendar";
 
 export const Route = createFileRoute("/dashboard")({
@@ -158,12 +158,17 @@ function PastelStat({ tone, icon: Icon, label, value, hint }: { tone: string; ic
 
 function FacultyDash() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [stats, setStats] = useState({ courses: 0, students: 0, sessions: 0, leaves: 0 });
 
   useEffect(() => {
     if (!user) return;
     (async () => {
       const { data: courses } = await supabase.from("courses").select("id").eq("faculty_id", user.id);
+      if (!courses || courses.length === 0) {
+        navigate({ to: "/faculty/onboarding" });
+        return;
+      }
       const courseIds = (courses ?? []).map(c => c.id);
       const [{ count: studentsC }, { count: sessC }, { count: leavesC }] = await Promise.all([
         supabase.from("enrollments").select("*", { count: "exact", head: true }).in("course_id", courseIds.length ? courseIds : ["00000000-0000-0000-0000-000000000000"]),
