@@ -26,6 +26,7 @@ function Page() {
   const { user } = useAuth();
   const approveFn = withAuthHeaders(useServerFn(facultyApproveStudent));
   const listFn = withAuthHeaders(useServerFn(listMyStudents));
+  const bulkAddFn = withAuthHeaders(useServerFn(bulkAddStudentsByName));
   const [students, setStudents] = useState<any[]>([]);
   const [groups, setGroups] = useState<any[]>([]);
   const [members, setMembers] = useState<Record<string, any[]>>({});
