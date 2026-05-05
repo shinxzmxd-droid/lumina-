@@ -145,7 +145,7 @@ function Page() {
       const unmatched: string[] = [];
       for (const n of cleaned) {
         const nn = norm(n);
-        const hit = approved.find(s => {
+        const hit = students.find(s => {
           const sn = norm(s.full_name ?? "");
           return sn && (sn === nn || sn.includes(nn) || nn.includes(sn));
         });
