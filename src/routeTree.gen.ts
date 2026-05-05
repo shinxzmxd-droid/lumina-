@@ -21,6 +21,8 @@ import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AttendanceRouteImport } from './routes/attendance'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as FacultyTimetableRouteImport } from './routes/faculty.timetable'
+import { Route as FacultyStudentsRouteImport } from './routes/faculty.students'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminTimetableRouteImport } from './routes/admin.timetable'
 import { Route as AdminLeavesRouteImport } from './routes/admin.leaves'
@@ -86,6 +88,16 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FacultyTimetableRoute = FacultyTimetableRouteImport.update({
+  id: '/faculty/timetable',
+  path: '/faculty/timetable',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FacultyStudentsRoute = FacultyStudentsRouteImport.update({
+  id: '/faculty/students',
+  path: '/faculty/students',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
   id: '/admin/users',
   path: '/admin/users',
@@ -124,6 +136,8 @@ export interface FileRoutesByFullPath {
   '/admin/leaves': typeof AdminLeavesRoute
   '/admin/timetable': typeof AdminTimetableRoute
   '/admin/users': typeof AdminUsersRoute
+  '/faculty/students': typeof FacultyStudentsRoute
+  '/faculty/timetable': typeof FacultyTimetableRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -142,6 +156,8 @@ export interface FileRoutesByTo {
   '/admin/leaves': typeof AdminLeavesRoute
   '/admin/timetable': typeof AdminTimetableRoute
   '/admin/users': typeof AdminUsersRoute
+  '/faculty/students': typeof FacultyStudentsRoute
+  '/faculty/timetable': typeof FacultyTimetableRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -161,6 +177,8 @@ export interface FileRoutesById {
   '/admin/leaves': typeof AdminLeavesRoute
   '/admin/timetable': typeof AdminTimetableRoute
   '/admin/users': typeof AdminUsersRoute
+  '/faculty/students': typeof FacultyStudentsRoute
+  '/faculty/timetable': typeof FacultyTimetableRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -181,6 +199,8 @@ export interface FileRouteTypes {
     | '/admin/leaves'
     | '/admin/timetable'
     | '/admin/users'
+    | '/faculty/students'
+    | '/faculty/timetable'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -199,6 +219,8 @@ export interface FileRouteTypes {
     | '/admin/leaves'
     | '/admin/timetable'
     | '/admin/users'
+    | '/faculty/students'
+    | '/faculty/timetable'
   id:
     | '__root__'
     | '/'
@@ -217,6 +239,8 @@ export interface FileRouteTypes {
     | '/admin/leaves'
     | '/admin/timetable'
     | '/admin/users'
+    | '/faculty/students'
+    | '/faculty/timetable'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -236,6 +260,8 @@ export interface RootRouteChildren {
   AdminLeavesRoute: typeof AdminLeavesRoute
   AdminTimetableRoute: typeof AdminTimetableRoute
   AdminUsersRoute: typeof AdminUsersRoute
+  FacultyStudentsRoute: typeof FacultyStudentsRoute
+  FacultyTimetableRoute: typeof FacultyTimetableRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -324,6 +350,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/faculty/timetable': {
+      id: '/faculty/timetable'
+      path: '/faculty/timetable'
+      fullPath: '/faculty/timetable'
+      preLoaderRoute: typeof FacultyTimetableRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/faculty/students': {
+      id: '/faculty/students'
+      path: '/faculty/students'
+      fullPath: '/faculty/students'
+      preLoaderRoute: typeof FacultyStudentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/users': {
       id: '/admin/users'
       path: '/admin/users'
@@ -372,16 +412,9 @@ const rootRouteChildren: RootRouteChildren = {
   AdminLeavesRoute: AdminLeavesRoute,
   AdminTimetableRoute: AdminTimetableRoute,
   AdminUsersRoute: AdminUsersRoute,
+  FacultyStudentsRoute: FacultyStudentsRoute,
+  FacultyTimetableRoute: FacultyTimetableRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}

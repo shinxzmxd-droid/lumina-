@@ -18,6 +18,8 @@ const navByRole: Record<AppRole, { to: string; label: string; icon: any }[]> = {
   faculty: [
     { to: "/dashboard", label: "Overview", icon: LayoutDashboard },
     { to: "/courses", label: "My Courses", icon: BookOpen },
+    { to: "/faculty/students", label: "My Students", icon: Users },
+    { to: "/faculty/timetable", label: "Edit Timetable", icon: Calendar },
     { to: "/mark-attendance", label: "Mark Attendance", icon: ClipboardCheck },
     { to: "/leaves", label: "My Leaves", icon: FileText },
     { to: "/faculty-leaves", label: "Student Leaves", icon: FileText },

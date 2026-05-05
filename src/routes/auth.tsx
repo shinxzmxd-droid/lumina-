@@ -7,8 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { GraduationCap } from "lucide-react";
 import { toast } from "sonner";
+import { listFacultyPublic } from "@/server/public.functions";
+import { useServerFn } from "@tanstack/react-start";
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
@@ -25,7 +28,14 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [role, setRole] = useState<"student" | "faculty" | "admin">("student");
+  const [assignedFaculty, setAssignedFaculty] = useState<string>("");
+  const [facultyList, setFacultyList] = useState<{ user_id: string; full_name: string }[]>([]);
   const [busy, setBusy] = useState(false);
+  const fetchFaculty = useServerFn(listFacultyPublic);
+
+  useEffect(() => {
+    fetchFaculty().then((r) => setFacultyList(r.faculty)).catch(() => {});
+  }, []);
 
   const signIn = async () => {
     setBusy(true);
@@ -37,18 +47,26 @@ function AuthPage() {
   };
 
   const signUp = async () => {
+    if (role === "student" && !assignedFaculty) {
+      return toast.error("Please pick the faculty who will approve your account");
+    }
     setBusy(true);
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: `${window.location.origin}/dashboard`,
-        data: { full_name: name, role },
+        data: {
+          full_name: name,
+          role,
+          ...(role === "student" ? { assigned_faculty_id: assignedFaculty } : {}),
+        },
       },
     });
     setBusy(false);
     if (error) return toast.error(error.message);
-    toast.success("Account created — pending admin approval. You can sign in once approved.");
+    const who = role === "student" ? "your assigned faculty" : "an admin";
+    toast.success(`Account created — pending approval by ${who}. You can sign in once approved.`);
   };
 
   return (
@@ -102,6 +120,17 @@ function AuthPage() {
                   ))}
                 </RadioGroup>
               </div>
+              {role === "student" && (
+                <div>
+                  <Label className="mb-2 block">Assigned faculty (will approve you)</Label>
+                  <Select value={assignedFaculty} onValueChange={setAssignedFaculty}>
+                    <SelectTrigger><SelectValue placeholder={facultyList.length ? "Pick a faculty" : "No faculty available yet"} /></SelectTrigger>
+                    <SelectContent>
+                      {facultyList.map(f => <SelectItem key={f.user_id} value={f.user_id}>{f.full_name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               <Button className="w-full bg-gradient-primary shadow-glow" disabled={busy} onClick={signUp}>
                 {busy ? "…" : "Create account"}
               </Button>
