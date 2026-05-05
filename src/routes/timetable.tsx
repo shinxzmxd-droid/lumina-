@@ -110,9 +110,8 @@ function Page() {
       <div className="flex items-end justify-between flex-wrap gap-2">
         <div>
           <h1 className="text-3xl font-bold font-display">Weekly Timetable</h1>
-          <p className="text-muted-foreground text-sm">Sem IV 'B' • Information Science & Engineering • Room {room}</p>
+          {groupName && <p className="text-muted-foreground text-sm">{groupName}</p>}
         </div>
-        <div className="text-xs text-muted-foreground">Academic Year 2025-26 (Even Semester)</div>
       </div>
 
       {slots.length === 0 ? (
