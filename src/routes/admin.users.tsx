@@ -2,8 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { RequireAuth } from "@/components/RequireAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { adminCreateUser, adminSetApproval, adminSeedFaculty } from "@/server/admin-users.functions";
-import { Textarea } from "@/components/ui/textarea";
+import { adminCreateUser, adminSetApproval } from "@/server/admin-users.functions";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Plus, Check, X, UserPlus, Copy } from "lucide-react";
+import { Plus, Check, X } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin/users")({
@@ -25,12 +24,6 @@ function Page() {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [form, setForm] = useState({ email: "", password: "", fullName: "", role: "faculty" as "student"|"faculty"|"admin" });
-  const [seedOpen, setSeedOpen] = useState(false);
-  const [seedBusy, setSeedBusy] = useState(false);
-  const [seedNames, setSeedNames] = useState("Dr. Sridevi K N\nMr. Vinay B V\nMrs. Rajitha K R\nProf. Manoji Rao\nMrs. Bhavana Nagaraj\nMrs. Nagarathana\nMr. C P Sathish Kumar\nDr. Sathyanarayana N\nMr. Rakesh B S\nMr. Deepu\nMrs. Vijayalakshmi R");
-  const [seedPassword, setSeedPassword] = useState("Lumina@123");
-  const [seedDomain, setSeedDomain] = useState("lumina.edu");
-  const [seedResult, setSeedResult] = useState<{ created: any[]; skipped: any[]; password: string } | null>(null);
 
   const load = async () => {
     const [{ data: p }, { data: r }] = await Promise.all([
@@ -69,81 +62,12 @@ function Page() {
   const studentsPending = profiles.filter(p => !p.approved && isStudent(p.user_id));
   const approved = profiles.filter(p => p.approved);
 
-  const seed = async () => {
-    const names = seedNames.split("\n").map(s => s.trim()).filter(Boolean);
-    if (names.length === 0) return toast.error("Add at least one name");
-    setSeedBusy(true);
-    try {
-      const r: any = await adminSeedFaculty({ data: { names, password: seedPassword, domain: seedDomain } });
-      console.log("[seedFaculty] response:", r);
-      const safe = {
-        created: Array.isArray(r?.created) ? r.created : [],
-        skipped: Array.isArray(r?.skipped) ? r.skipped : [],
-        password: r?.password ?? seedPassword,
-      };
-      setSeedResult(safe);
-      toast.success(`Created ${safe.created.length} faculty${safe.skipped.length ? `, skipped ${safe.skipped.length}` : ""}`);
-      load();
-    } catch (e: any) {
-      console.error("[seedFaculty] error:", e);
-      toast.error(e?.message || "Failed to seed faculty");
-    }
-    finally { setSeedBusy(false); }
-  };
-
-  const copyAll = () => {
-    if (!seedResult) return;
-    const text = seedResult.created.map(c => `${c.name} — ${c.email} / ${seedResult.password}`).join("\n");
-    navigator.clipboard.writeText(text);
-    toast.success("Copied to clipboard");
-  };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="text-3xl font-bold font-display">Users & approvals</h1>
         <div className="flex gap-2 flex-wrap">
-          <Dialog open={seedOpen} onOpenChange={(o)=>{ setSeedOpen(o); if(!o) setSeedResult(null); }}>
-            <DialogTrigger asChild>
-              <Button variant="outline"><UserPlus className="w-4 h-4 mr-2" />Seed faculty list</Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-xl max-h-[85vh] overflow-y-auto">
-              <DialogHeader><DialogTitle>Bulk-create faculty accounts</DialogTitle></DialogHeader>
-              {!seedResult ? (
-                <div className="space-y-3">
-                  <p className="text-xs text-muted-foreground">One name per line. Emails will be auto-generated. Accounts are auto-approved.</p>
-                  <div><Label>Faculty names</Label><Textarea rows={10} value={seedNames} onChange={e=>setSeedNames(e.target.value)} /></div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div><Label>Email domain</Label><Input value={seedDomain} onChange={e=>setSeedDomain(e.target.value)} /></div>
-                    <div><Label>Temp password</Label><Input value={seedPassword} onChange={e=>setSeedPassword(e.target.value)} /></div>
-                  </div>
-                  <Button className="w-full bg-gradient-primary" disabled={seedBusy} onClick={seed}>{seedBusy ? "Creating…" : "Create accounts"}</Button>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm">Created <strong>{seedResult.created.length}</strong> · Skipped <strong>{seedResult.skipped.length}</strong></p>
-                    <Button size="sm" variant="outline" onClick={copyAll}><Copy className="w-3 h-3 mr-1" />Copy all</Button>
-                  </div>
-                  <div className="border rounded-lg overflow-hidden text-xs">
-                    <table className="w-full">
-                      <thead className="bg-muted/50"><tr><th className="text-left p-2">Name</th><th className="text-left p-2">Email</th></tr></thead>
-                      <tbody>
-                        {seedResult.created.map(c => <tr key={c.email} className="border-t"><td className="p-2">{c.name}</td><td className="p-2 font-mono">{c.email}</td></tr>)}
-                      </tbody>
-                    </table>
-                  </div>
-                  <p className="text-xs text-muted-foreground">Shared temp password: <strong className="font-mono">{seedResult.password}</strong>. Faculty should change it on first login.</p>
-                  {seedResult.skipped.length > 0 && (
-                    <details className="text-xs">
-                      <summary className="cursor-pointer">{seedResult.skipped.length} skipped</summary>
-                      <ul className="mt-2 space-y-1">{seedResult.skipped.map((s, i) => <li key={i}>{s.name} — {s.reason}</li>)}</ul>
-                    </details>
-                  )}
-                </div>
-              )}
-            </DialogContent>
-          </Dialog>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button className="bg-gradient-primary"><Plus className="w-4 h-4 mr-2" />Create account</Button>
