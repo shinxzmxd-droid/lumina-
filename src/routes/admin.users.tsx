@@ -99,10 +99,10 @@ function Page() {
         </TabsList>
 
         <TabsContent value="pending">
-          <UserTable rows={pending} roles={roles} onApprove={(uid)=>setApproval(uid, true)} pending />
+          <UserTable rows={pending} roles={roles} onApprove={(uid: string)=>setApproval(uid, true)} pending />
         </TabsContent>
         <TabsContent value="approved">
-          <UserTable rows={approved} roles={roles} onRevoke={(uid)=>setApproval(uid, false)} />
+          <UserTable rows={approved} roles={roles} onRevoke={(uid: string)=>setApproval(uid, false)} />
         </TabsContent>
       </Tabs>
     </div>
