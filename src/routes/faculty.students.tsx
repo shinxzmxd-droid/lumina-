@@ -85,6 +85,15 @@ function Page() {
     loadGroups();
   };
 
+  const editGroup = async (g: any) => {
+    const name = prompt("Class name", g.name)?.trim();
+    if (!name) return;
+    const sem = prompt("Semester (e.g. 3rd Semester)", g.semester)?.trim() || g.semester;
+    const { error } = await supabase.from("class_groups").update({ name, semester: sem }).eq("id", g.id);
+    if (error) return toast.error(error.message);
+    toast.success("Class updated"); loadGroups();
+  };
+
   const pending = students.filter(s => !s.approved);
   const approved = students.filter(s => s.approved);
 
