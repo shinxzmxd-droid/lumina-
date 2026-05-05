@@ -106,13 +106,28 @@ function Page() {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold font-display">{role === "student" ? "My courses" : "Courses"}</h1>
         {role !== "student" && (
-          <Dialog>
+          <Dialog open={createOpen} onOpenChange={setCreateOpen}>
             <DialogTrigger asChild><Button className="bg-gradient-primary"><Plus className="w-4 h-4 mr-2" />New course</Button></DialogTrigger>
             <DialogContent>
               <DialogHeader><DialogTitle>Create course</DialogTitle></DialogHeader>
               <div className="space-y-3">
                 <div><Label>Code</Label><Input value={newCode} onChange={e=>setNewCode(e.target.value)} placeholder="CS101" /></div>
                 <div><Label>Name</Label><Input value={newName} onChange={e=>setNewName(e.target.value)} placeholder="Intro to Computer Science" /></div>
+                {role === "faculty" && (
+                  <div>
+                    <Label>Assign to class (optional)</Label>
+                    <Select value={newClassId} onValueChange={setNewClassId}>
+                      <SelectTrigger><SelectValue placeholder="Select a class" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">No class — just create</SelectItem>
+                        {classGroups.map(g => (
+                          <SelectItem key={g.id} value={g.id}>{g.name} · {g.semester}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground mt-1">All students in the chosen class will be auto-enrolled.</p>
+                  </div>
+                )}
                 <Button onClick={createCourse} className="w-full">Create</Button>
               </div>
             </DialogContent>
