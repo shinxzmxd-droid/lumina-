@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Check, X, Plus, Trash2, Users, Upload } from "lucide-react";
+import { Check, X, Plus, Trash2, Users, Upload, Pencil } from "lucide-react";
 import * as XLSX from "xlsx";
 import { toast } from "sonner";
 import { facultyApproveStudent, listMyStudents } from "@/server/faculty-students.functions";
@@ -83,6 +83,15 @@ function Page() {
     const { error } = await supabase.from("class_groups").delete().eq("id", id);
     if (error) return toast.error(error.message);
     loadGroups();
+  };
+
+  const editGroup = async (g: any) => {
+    const name = prompt("Class name", g.name)?.trim();
+    if (!name) return;
+    const sem = prompt("Semester (e.g. 3rd Semester)", g.semester)?.trim() || g.semester;
+    const { error } = await supabase.from("class_groups").update({ name, semester: sem }).eq("id", g.id);
+    if (error) return toast.error(error.message);
+    toast.success("Class updated"); loadGroups();
   };
 
   const pending = students.filter(s => !s.approved);
@@ -239,6 +248,7 @@ function Page() {
                       <h4 className="font-display font-semibold flex items-center gap-2"><Users className="w-4 h-4" /> {g.name}</h4>
                       <Badge variant="outline" className="mt-1">{g.semester}</Badge>
                     </div>
+                    <Button size="icon" variant="ghost" onClick={()=>editGroup(g)}><Pencil className="w-4 h-4" /></Button>
                     <Button size="icon" variant="ghost" onClick={()=>deleteGroup(g.id)}><Trash2 className="w-4 h-4" /></Button>
                   </div>
                   <div className="space-y-1">
