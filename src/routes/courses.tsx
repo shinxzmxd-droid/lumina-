@@ -22,6 +22,7 @@ function Page() {
   const [courses, setCourses] = useState<any[]>([]);
   const [newCode, setNewCode] = useState(""); const [newName, setNewName] = useState("");
   const [classGroups, setClassGroups] = useState<any[]>([]);
+  const [newSemester, setNewSemester] = useState<string>("any");
   const [newClassId, setNewClassId] = useState<string>("none");
   const [createOpen, setCreateOpen] = useState(false);
   const [matCourse, setMatCourse] = useState<any>(null);
@@ -64,7 +65,7 @@ function Page() {
       }
     }
     toast.success(enrolled ? `Course created · ${enrolled} students enrolled` : "Course created");
-    setNewCode(""); setNewName(""); setNewClassId("none"); setCreateOpen(false); load();
+    setNewCode(""); setNewName(""); setNewClassId("none"); setNewSemester("any"); setCreateOpen(false); load();
   };
 
   const enroll = async (cid: string) => {
@@ -114,19 +115,35 @@ function Page() {
                 <div><Label>Code</Label><Input value={newCode} onChange={e=>setNewCode(e.target.value)} placeholder="CS101" /></div>
                 <div><Label>Name</Label><Input value={newName} onChange={e=>setNewName(e.target.value)} placeholder="Intro to Computer Science" /></div>
                 {role === "faculty" && (
-                  <div>
-                    <Label>Assign to class (optional)</Label>
-                    <Select value={newClassId} onValueChange={setNewClassId}>
-                      <SelectTrigger><SelectValue placeholder="Select a class" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">No class — just create</SelectItem>
-                        {classGroups.map(g => (
-                          <SelectItem key={g.id} value={g.id}>{g.name} · {g.semester}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <p className="text-xs text-muted-foreground mt-1">All students in the chosen class will be auto-enrolled.</p>
-                  </div>
+                  <>
+                    <div>
+                      <Label>Semester</Label>
+                      <Select value={newSemester} onValueChange={(v) => { setNewSemester(v); setNewClassId("none"); }}>
+                        <SelectTrigger><SelectValue placeholder="Select semester" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="any">Any semester</SelectItem>
+                          {["1st Semester","2nd Semester","3rd Semester","4th Semester","5th Semester","6th Semester","7th Semester","8th Semester"].map(s => (
+                            <SelectItem key={s} value={s}>{s}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>Assign to class (optional)</Label>
+                      <Select value={newClassId} onValueChange={setNewClassId}>
+                        <SelectTrigger><SelectValue placeholder="Select a class" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">No class — just create</SelectItem>
+                          {classGroups
+                            .filter(g => newSemester === "any" || g.semester === newSemester)
+                            .map(g => (
+                              <SelectItem key={g.id} value={g.id}>{g.name} · {g.semester}</SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground mt-1">All students in the chosen class will be auto-enrolled.</p>
+                    </div>
+                  </>
                 )}
                 <Button onClick={createCourse} className="w-full">Create</Button>
               </div>
