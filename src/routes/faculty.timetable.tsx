@@ -41,6 +41,20 @@ function Page() {
 
   const add = async () => {
     if (!form.course_id) return toast.error("Pick a course");
+    if (form.start_time >= form.end_time) return toast.error("End time must be after start time");
+
+    // Check overlap with this faculty's other slots (across all classes)
+    const courseIds = courses.map(c => c.id);
+    const { data: existing } = await supabase.from("timetable_slots")
+      .select("start_time, end_time")
+      .in("course_id", courseIds)
+      .eq("day_of_week", form.day_of_week);
+    const conflict = (existing ?? []).some((es: any) => {
+      const s = es.start_time.slice(0,5), e = es.end_time.slice(0,5);
+      return form.start_time < e && s < form.end_time;
+    });
+    if (conflict) return toast.error("You already have a class in that time slot");
+
     const { error } = await supabase.from("timetable_slots").insert({
       course_id: form.course_id,
       day_of_week: form.day_of_week,
