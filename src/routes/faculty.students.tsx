@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Check, X, Plus, Trash2, Users, Upload } from "lucide-react";
+import { Check, X, Plus, Trash2, Users, Upload, Pencil } from "lucide-react";
 import * as XLSX from "xlsx";
 import { toast } from "sonner";
 import { facultyApproveStudent, listMyStudents } from "@/server/faculty-students.functions";
