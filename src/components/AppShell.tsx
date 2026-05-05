@@ -25,6 +25,7 @@ const navByRole: Record<AppRole, { to: string; label: string; icon: any }[]> = {
     { to: "/leaves", label: "My Leaves", icon: FileText },
     { to: "/faculty-leaves", label: "Student Leaves", icon: FileText },
     { to: "/timetable", label: "Timetable", icon: Calendar },
+    { to: "/announcements", label: "Announcements", icon: Megaphone },
   ],
   admin: [
     { to: "/dashboard", label: "Campus Overview", icon: LayoutDashboard },
