@@ -103,47 +103,6 @@ function Page() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="text-3xl font-bold font-display">Users & approvals</h1>
         <div className="flex gap-2 flex-wrap">
-          <Dialog open={seedOpen} onOpenChange={(o)=>{ setSeedOpen(o); if(!o) setSeedResult(null); }}>
-            <DialogTrigger asChild>
-              <Button variant="outline"><UserPlus className="w-4 h-4 mr-2" />Seed faculty list</Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-xl max-h-[85vh] overflow-y-auto">
-              <DialogHeader><DialogTitle>Bulk-create faculty accounts</DialogTitle></DialogHeader>
-              {!seedResult ? (
-                <div className="space-y-3">
-                  <p className="text-xs text-muted-foreground">One name per line. Emails will be auto-generated. Accounts are auto-approved.</p>
-                  <div><Label>Faculty names</Label><Textarea rows={10} value={seedNames} onChange={e=>setSeedNames(e.target.value)} /></div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div><Label>Email domain</Label><Input value={seedDomain} onChange={e=>setSeedDomain(e.target.value)} /></div>
-                    <div><Label>Temp password</Label><Input value={seedPassword} onChange={e=>setSeedPassword(e.target.value)} /></div>
-                  </div>
-                  <Button className="w-full bg-gradient-primary" disabled={seedBusy} onClick={seed}>{seedBusy ? "Creating…" : "Create accounts"}</Button>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm">Created <strong>{seedResult.created.length}</strong> · Skipped <strong>{seedResult.skipped.length}</strong></p>
-                    <Button size="sm" variant="outline" onClick={copyAll}><Copy className="w-3 h-3 mr-1" />Copy all</Button>
-                  </div>
-                  <div className="border rounded-lg overflow-hidden text-xs">
-                    <table className="w-full">
-                      <thead className="bg-muted/50"><tr><th className="text-left p-2">Name</th><th className="text-left p-2">Email</th></tr></thead>
-                      <tbody>
-                        {seedResult.created.map(c => <tr key={c.email} className="border-t"><td className="p-2">{c.name}</td><td className="p-2 font-mono">{c.email}</td></tr>)}
-                      </tbody>
-                    </table>
-                  </div>
-                  <p className="text-xs text-muted-foreground">Shared temp password: <strong className="font-mono">{seedResult.password}</strong>. Faculty should change it on first login.</p>
-                  {seedResult.skipped.length > 0 && (
-                    <details className="text-xs">
-                      <summary className="cursor-pointer">{seedResult.skipped.length} skipped</summary>
-                      <ul className="mt-2 space-y-1">{seedResult.skipped.map((s, i) => <li key={i}>{s.name} — {s.reason}</li>)}</ul>
-                    </details>
-                  )}
-                </div>
-              )}
-            </DialogContent>
-          </Dialog>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button className="bg-gradient-primary"><Plus className="w-4 h-4 mr-2" />Create account</Button>
