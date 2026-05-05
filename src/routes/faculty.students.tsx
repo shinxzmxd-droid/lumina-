@@ -23,8 +23,8 @@ export const Route = createFileRoute("/faculty/students")({
 
 function Page() {
   const { user } = useAuth();
-  const approveFn = useServerFn(facultyApproveStudent);
-  const listFn = useServerFn(listMyStudents);
+  const approveFn = withAuthHeaders(useServerFn(facultyApproveStudent));
+  const listFn = withAuthHeaders(useServerFn(listMyStudents));
   const [students, setStudents] = useState<any[]>([]);
   const [groups, setGroups] = useState<any[]>([]);
   const [members, setMembers] = useState<Record<string, any[]>>({});
