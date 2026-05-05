@@ -120,6 +120,17 @@ function AuthPage() {
                   ))}
                 </RadioGroup>
               </div>
+              {role === "student" && (
+                <div>
+                  <Label className="mb-2 block">Assigned faculty (will approve you)</Label>
+                  <Select value={assignedFaculty} onValueChange={setAssignedFaculty}>
+                    <SelectTrigger><SelectValue placeholder={facultyList.length ? "Pick a faculty" : "No faculty available yet"} /></SelectTrigger>
+                    <SelectContent>
+                      {facultyList.map(f => <SelectItem key={f.user_id} value={f.user_id}>{f.full_name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               <Button className="w-full bg-gradient-primary shadow-glow" disabled={busy} onClick={signUp}>
                 {busy ? "…" : "Create account"}
               </Button>
