@@ -161,6 +161,7 @@ function Page() {
             </div>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       <Tabs defaultValue="pending">
