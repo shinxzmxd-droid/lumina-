@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { BookOpen, Plus, Upload, FileText, Pencil, Trash2, Download, Eye } from "lucide-react";
 
@@ -20,6 +21,9 @@ function Page() {
   const { user, role } = useAuth();
   const [courses, setCourses] = useState<any[]>([]);
   const [newCode, setNewCode] = useState(""); const [newName, setNewName] = useState("");
+  const [classGroups, setClassGroups] = useState<any[]>([]);
+  const [newClassId, setNewClassId] = useState<string>("none");
+  const [createOpen, setCreateOpen] = useState(false);
   const [matCourse, setMatCourse] = useState<any>(null);
   const [matTitle, setMatTitle] = useState(""); const [matContent, setMatContent] = useState("");
   const [matFile, setMatFile] = useState<File | null>(null);
@@ -32,6 +36,8 @@ function Page() {
     } else if (role === "faculty") {
       const { data } = await supabase.from("courses").select("*").eq("faculty_id", user!.id);
       setCourses(data ?? []);
+      const { data: g } = await supabase.from("class_groups").select("*").eq("faculty_id", user!.id).order("created_at", { ascending: false });
+      setClassGroups(g ?? []);
     } else {
       const { data } = await supabase.from("courses").select("*");
       setCourses(data ?? []);
@@ -41,9 +47,24 @@ function Page() {
 
   const createCourse = async () => {
     if (!newCode || !newName) return;
-    const { error } = await supabase.from("courses").insert({ code: newCode, name: newName, faculty_id: user!.id });
+    const { data: created, error } = await supabase.from("courses")
+      .insert({ code: newCode, name: newName, faculty_id: user!.id })
+      .select("id").single();
     if (error) return toast.error(error.message);
-    toast.success("Course created"); setNewCode(""); setNewName(""); load();
+
+    let enrolled = 0;
+    if (newClassId && newClassId !== "none" && created) {
+      const { data: members } = await supabase.from("class_group_members")
+        .select("student_id").eq("class_group_id", newClassId);
+      const rows = (members ?? []).map((m: any) => ({ course_id: created.id, student_id: m.student_id }));
+      if (rows.length) {
+        const { error: enErr } = await supabase.from("enrollments").insert(rows);
+        if (enErr) toast.error(`Course created, but enrollment failed: ${enErr.message}`);
+        else enrolled = rows.length;
+      }
+    }
+    toast.success(enrolled ? `Course created · ${enrolled} students enrolled` : "Course created");
+    setNewCode(""); setNewName(""); setNewClassId("none"); setCreateOpen(false); load();
   };
 
   const enroll = async (cid: string) => {
@@ -85,13 +106,28 @@ function Page() {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold font-display">{role === "student" ? "My courses" : "Courses"}</h1>
         {role !== "student" && (
-          <Dialog>
+          <Dialog open={createOpen} onOpenChange={setCreateOpen}>
             <DialogTrigger asChild><Button className="bg-gradient-primary"><Plus className="w-4 h-4 mr-2" />New course</Button></DialogTrigger>
             <DialogContent>
               <DialogHeader><DialogTitle>Create course</DialogTitle></DialogHeader>
               <div className="space-y-3">
                 <div><Label>Code</Label><Input value={newCode} onChange={e=>setNewCode(e.target.value)} placeholder="CS101" /></div>
                 <div><Label>Name</Label><Input value={newName} onChange={e=>setNewName(e.target.value)} placeholder="Intro to Computer Science" /></div>
+                {role === "faculty" && (
+                  <div>
+                    <Label>Assign to class (optional)</Label>
+                    <Select value={newClassId} onValueChange={setNewClassId}>
+                      <SelectTrigger><SelectValue placeholder="Select a class" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">No class — just create</SelectItem>
+                        {classGroups.map(g => (
+                          <SelectItem key={g.id} value={g.id}>{g.name} · {g.semester}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground mt-1">All students in the chosen class will be auto-enrolled.</p>
+                  </div>
+                )}
                 <Button onClick={createCourse} className="w-full">Create</Button>
               </div>
             </DialogContent>
