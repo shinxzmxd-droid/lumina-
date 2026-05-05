@@ -65,7 +65,7 @@ function Page() {
       }
     }
     toast.success(enrolled ? `Course created · ${enrolled} students enrolled` : "Course created");
-    setNewCode(""); setNewName(""); setNewClassId("none"); setCreateOpen(false); load();
+    setNewCode(""); setNewName(""); setNewClassId("none"); setNewSemester("any"); setCreateOpen(false); load();
   };
 
   const enroll = async (cid: string) => {
