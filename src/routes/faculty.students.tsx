@@ -11,7 +11,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Check, X, Plus, Trash2, Users } from "lucide-react";
+import { Check, X, Plus, Trash2, Users, Upload } from "lucide-react";
+import * as XLSX from "xlsx";
 import { toast } from "sonner";
 import { facultyApproveStudent, listMyStudents } from "@/server/faculty-students.functions";
 import { useServerFn } from "@tanstack/react-start";
@@ -88,6 +89,77 @@ function Page() {
   const approved = students.filter(s => s.approved);
 
   const studentName = (sid: string) => students.find(s => s.user_id === sid)?.full_name ?? "Student";
+
+  const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+
+  const extractNames = async (file: File): Promise<string[]> => {
+    const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
+    if (["xlsx","xls","ods","xlsm","xlsb"].includes(ext)) {
+      const buf = await file.arrayBuffer();
+      const wb = XLSX.read(buf, { type: "array" });
+      const out: string[] = [];
+      for (const name of wb.SheetNames) {
+        const rows: any[][] = XLSX.utils.sheet_to_json(wb.Sheets[name], { header: 1, blankrows: false });
+        for (const row of rows) for (const cell of row) if (cell != null) out.push(String(cell));
+      }
+      return out;
+    }
+    const text = await file.text();
+    if (ext === "json") {
+      try {
+        const data = JSON.parse(text);
+        const out: string[] = [];
+        const walk = (v: any) => {
+          if (v == null) return;
+          if (typeof v === "string" || typeof v === "number") out.push(String(v));
+          else if (Array.isArray(v)) v.forEach(walk);
+          else if (typeof v === "object") Object.values(v).forEach(walk);
+        };
+        walk(data);
+        return out;
+      } catch { /* fall through */ }
+    }
+    // csv / tsv / txt / md / anything text
+    return text.split(/\r?\n/).flatMap(line => line.split(/[,\t;|]/));
+  };
+
+  const importNames = async (groupId: string, file: File) => {
+    try {
+      const raw = await extractNames(file);
+      const cleaned = Array.from(new Set(
+        raw.map(s => String(s).trim()).filter(s => s && s.length >= 2 && /[a-zA-Z]/.test(s))
+      ));
+      if (!cleaned.length) return toast.error("No names found in file");
+
+      const existingIds = new Set((members[groupId] ?? []).map((m: any) => m.student_id));
+      const matched: { id: string; name: string }[] = [];
+      const unmatched: string[] = [];
+      for (const n of cleaned) {
+        const nn = norm(n);
+        const hit = approved.find(s => {
+          const sn = norm(s.full_name ?? "");
+          return sn && (sn === nn || sn.includes(nn) || nn.includes(sn));
+        });
+        if (hit && !existingIds.has(hit.user_id) && !matched.some(m => m.id === hit.user_id)) {
+          matched.push({ id: hit.user_id, name: hit.full_name });
+        } else if (!hit) {
+          unmatched.push(n);
+        }
+      }
+
+      if (matched.length) {
+        const rows = matched.map(m => ({ class_group_id: groupId, student_id: m.id }));
+        const { error } = await supabase.from("class_group_members").insert(rows);
+        if (error) return toast.error(error.message);
+      }
+      toast.success(`${matched.length} added · ${unmatched.length} unmatched`);
+      if (unmatched.length) console.warn("Unmatched names:", unmatched);
+      loadGroups();
+    } catch (e: any) {
+      toast.error(e.message ?? "Import failed");
+    }
+  };
+
 
   return (
     <div className="space-y-6">
@@ -177,20 +249,37 @@ function Page() {
                       </div>
                     ))}
                   </div>
-                  <Dialog>
-                    <DialogTrigger asChild><Button size="sm" variant="outline" className="w-full"><Plus className="w-3 h-3 mr-1" />Add student</Button></DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader><DialogTitle>Add to {g.name}</DialogTitle></DialogHeader>
-                      <div className="space-y-2 max-h-80 overflow-y-auto">
-                        {eligible.length === 0 && <p className="text-sm text-muted-foreground">No approved students available.</p>}
-                        {eligible.map(s => (
-                          <Button key={s.user_id} variant="outline" className="w-full justify-start" onClick={()=>addMember(g.id, s.user_id)}>
-                            + {s.full_name}
-                          </Button>
-                        ))}
-                      </div>
-                    </DialogContent>
-                  </Dialog>
+                  <div className="flex gap-2">
+                    <Dialog>
+                      <DialogTrigger asChild><Button size="sm" variant="outline" className="flex-1"><Plus className="w-3 h-3 mr-1" />Add student</Button></DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader><DialogTitle>Add to {g.name}</DialogTitle></DialogHeader>
+                        <div className="space-y-2 max-h-80 overflow-y-auto">
+                          {eligible.length === 0 && <p className="text-sm text-muted-foreground">No approved students available.</p>}
+                          {eligible.map(s => (
+                            <Button key={s.user_id} variant="outline" className="w-full justify-start" onClick={()=>addMember(g.id, s.user_id)}>
+                              + {s.full_name}
+                            </Button>
+                          ))}
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                    <Button asChild size="sm" variant="outline" className="flex-1 cursor-pointer">
+                      <label>
+                        <Upload className="w-3 h-3 mr-1" /> Import file
+                        <input
+                          type="file"
+                          className="hidden"
+                          accept=".csv,.tsv,.txt,.md,.json,.xlsx,.xls,.xlsm,.xlsb,.ods,text/*"
+                          onChange={async (e) => {
+                            const f = e.target.files?.[0];
+                            e.currentTarget.value = "";
+                            if (f) await importNames(g.id, f);
+                          }}
+                        />
+                      </label>
+                    </Button>
+                  </div>
                 </Card>
               );
             })}
