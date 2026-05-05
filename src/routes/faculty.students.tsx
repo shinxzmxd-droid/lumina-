@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Check, X, Plus, Trash2, Users, Upload, Pencil } from "lucide-react";
 import * as XLSX from "xlsx";
 import { toast } from "sonner";
-import { facultyApproveStudent, listMyStudents } from "@/server/faculty-students.functions";
+import { facultyApproveStudent, listMyStudents, bulkAddStudentsByName } from "@/server/faculty-students.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { withAuthHeaders } from "@/lib/serverFnAuth";
 
