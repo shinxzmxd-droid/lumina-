@@ -338,6 +338,7 @@ export type Database = {
       }
       timetable_slots: {
         Row: {
+          class_group_id: string | null
           course_id: string
           created_at: string
           day_of_week: number
@@ -347,6 +348,7 @@ export type Database = {
           start_time: string
         }
         Insert: {
+          class_group_id?: string | null
           course_id: string
           created_at?: string
           day_of_week: number
@@ -356,6 +358,7 @@ export type Database = {
           start_time: string
         }
         Update: {
+          class_group_id?: string | null
           course_id?: string
           created_at?: string
           day_of_week?: number
@@ -365,6 +368,13 @@ export type Database = {
           start_time?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "timetable_slots_class_group_id_fkey"
+            columns: ["class_group_id"]
+            isOneToOne: false
+            referencedRelation: "class_groups"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "timetable_slots_course_id_fkey"
             columns: ["course_id"]
