@@ -15,6 +15,7 @@ import { Check, X, Plus, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
 import { facultyApproveStudent, listMyStudents } from "@/server/faculty-students.functions";
 import { useServerFn } from "@tanstack/react-start";
+import { withAuthHeaders } from "@/lib/serverFnAuth";
 
 export const Route = createFileRoute("/faculty/students")({
   component: () => <RequireAuth roles={["faculty"]}><Page /></RequireAuth>,
@@ -22,8 +23,8 @@ export const Route = createFileRoute("/faculty/students")({
 
 function Page() {
   const { user } = useAuth();
-  const approveFn = useServerFn(facultyApproveStudent);
-  const listFn = useServerFn(listMyStudents);
+  const approveFn = withAuthHeaders(useServerFn(facultyApproveStudent));
+  const listFn = withAuthHeaders(useServerFn(listMyStudents));
   const [students, setStudents] = useState<any[]>([]);
   const [groups, setGroups] = useState<any[]>([]);
   const [members, setMembers] = useState<Record<string, any[]>>({});
