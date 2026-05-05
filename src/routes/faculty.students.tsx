@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Check, X, Plus, Trash2, Users, Upload, Pencil } from "lucide-react";
 import * as XLSX from "xlsx";
 import { toast } from "sonner";
-import { facultyApproveStudent, listMyStudents } from "@/server/faculty-students.functions";
+import { facultyApproveStudent, listMyStudents, bulkAddStudentsByName } from "@/server/faculty-students.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { withAuthHeaders } from "@/lib/serverFnAuth";
 
@@ -26,6 +26,7 @@ function Page() {
   const { user } = useAuth();
   const approveFn = withAuthHeaders(useServerFn(facultyApproveStudent));
   const listFn = withAuthHeaders(useServerFn(listMyStudents));
+  const bulkAddFn = withAuthHeaders(useServerFn(bulkAddStudentsByName));
   const [students, setStudents] = useState<any[]>([]);
   const [groups, setGroups] = useState<any[]>([]);
   const [members, setMembers] = useState<Record<string, any[]>>({});
@@ -140,30 +141,13 @@ function Page() {
       ));
       if (!cleaned.length) return toast.error("No names found in file");
 
-      const existingIds = new Set((members[groupId] ?? []).map((m: any) => m.student_id));
-      const matched: { id: string; name: string }[] = [];
-      const unmatched: string[] = [];
-      for (const n of cleaned) {
-        const nn = norm(n);
-        const hit = approved.find(s => {
-          const sn = norm(s.full_name ?? "");
-          return sn && (sn === nn || sn.includes(nn) || nn.includes(sn));
-        });
-        if (hit && !existingIds.has(hit.user_id) && !matched.some(m => m.id === hit.user_id)) {
-          matched.push({ id: hit.user_id, name: hit.full_name });
-        } else if (!hit) {
-          unmatched.push(n);
-        }
-      }
-
-      if (matched.length) {
-        const rows = matched.map(m => ({ class_group_id: groupId, student_id: m.id }));
-        const { error } = await supabase.from("class_group_members").insert(rows);
-        if (error) return toast.error(error.message);
-      }
-      toast.success(`${matched.length} added · ${unmatched.length} unmatched`);
-      if (unmatched.length) console.warn("Unmatched names:", unmatched);
-      loadGroups();
+      try {
+        const res = await bulkAddFn({ data: { classGroupId: groupId, names: cleaned } });
+        toast.success(`${res.added} added · ${res.unmatched.length} unmatched`);
+        if (res.unmatched.length) console.warn("Unmatched names:", res.unmatched);
+        loadStudents();
+        loadGroups();
+      } catch (e: any) { toast.error(e.message); }
     } catch (e: any) {
       toast.error(e.message ?? "Import failed");
     }
