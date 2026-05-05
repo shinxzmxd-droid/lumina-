@@ -47,11 +47,6 @@ function Landing() {
               Get started <ArrowRight className="ml-2 w-4 h-4" />
             </Button>
           </Link>
-          <Link to="/auth">
-            <Button size="lg" variant="outline" className="bg-white/5 border-white/20 hover:bg-white/10">
-              See demo
-            </Button>
-          </Link>
         </div>
 
         <div className="mt-20 grid md:grid-cols-3 gap-6 text-left">
