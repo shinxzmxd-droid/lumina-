@@ -249,20 +249,37 @@ function Page() {
                       </div>
                     ))}
                   </div>
-                  <Dialog>
-                    <DialogTrigger asChild><Button size="sm" variant="outline" className="w-full"><Plus className="w-3 h-3 mr-1" />Add student</Button></DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader><DialogTitle>Add to {g.name}</DialogTitle></DialogHeader>
-                      <div className="space-y-2 max-h-80 overflow-y-auto">
-                        {eligible.length === 0 && <p className="text-sm text-muted-foreground">No approved students available.</p>}
-                        {eligible.map(s => (
-                          <Button key={s.user_id} variant="outline" className="w-full justify-start" onClick={()=>addMember(g.id, s.user_id)}>
-                            + {s.full_name}
-                          </Button>
-                        ))}
-                      </div>
-                    </DialogContent>
-                  </Dialog>
+                  <div className="flex gap-2">
+                    <Dialog>
+                      <DialogTrigger asChild><Button size="sm" variant="outline" className="flex-1"><Plus className="w-3 h-3 mr-1" />Add student</Button></DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader><DialogTitle>Add to {g.name}</DialogTitle></DialogHeader>
+                        <div className="space-y-2 max-h-80 overflow-y-auto">
+                          {eligible.length === 0 && <p className="text-sm text-muted-foreground">No approved students available.</p>}
+                          {eligible.map(s => (
+                            <Button key={s.user_id} variant="outline" className="w-full justify-start" onClick={()=>addMember(g.id, s.user_id)}>
+                              + {s.full_name}
+                            </Button>
+                          ))}
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                    <Button asChild size="sm" variant="outline" className="flex-1 cursor-pointer">
+                      <label>
+                        <Upload className="w-3 h-3 mr-1" /> Import file
+                        <input
+                          type="file"
+                          className="hidden"
+                          accept=".csv,.tsv,.txt,.md,.json,.xlsx,.xls,.xlsm,.xlsb,.ods,text/*"
+                          onChange={async (e) => {
+                            const f = e.target.files?.[0];
+                            e.currentTarget.value = "";
+                            if (f) await importNames(g.id, f);
+                          }}
+                        />
+                      </label>
+                    </Button>
+                  </div>
                 </Card>
               );
             })}
