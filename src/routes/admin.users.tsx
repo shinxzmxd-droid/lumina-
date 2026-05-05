@@ -57,7 +57,9 @@ function Page() {
     finally { setBusy(false); }
   };
 
-  const pending = profiles.filter(p => !p.approved);
+  const isStudent = (uid: string) => (roles[uid] ?? []).includes("student");
+  const pending = profiles.filter(p => !p.approved && !isStudent(p.user_id));
+  const studentsPending = profiles.filter(p => !p.approved && isStudent(p.user_id));
   const approved = profiles.filter(p => p.approved);
 
   return (
@@ -94,12 +96,19 @@ function Page() {
 
       <Tabs defaultValue="pending">
         <TabsList>
-          <TabsTrigger value="pending">Pending ({pending.length})</TabsTrigger>
+          <TabsTrigger value="pending">Pending faculty/admin ({pending.length})</TabsTrigger>
+          <TabsTrigger value="students-pending">Students awaiting faculty ({studentsPending.length})</TabsTrigger>
           <TabsTrigger value="approved">Approved ({approved.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="pending">
           <UserTable rows={pending} roles={roles} onApprove={(uid: string)=>setApproval(uid, true)} pending />
+        </TabsContent>
+        <TabsContent value="students-pending">
+          <Card className="p-3 mb-3 text-xs text-muted-foreground">
+            Student approvals are handled by their assigned faculty. Listed here for visibility only.
+          </Card>
+          <UserTable rows={studentsPending} roles={roles} onApprove={(uid: string)=>setApproval(uid, true)} pending />
         </TabsContent>
         <TabsContent value="approved">
           <UserTable rows={approved} roles={roles} onRevoke={(uid: string)=>setApproval(uid, false)} />
