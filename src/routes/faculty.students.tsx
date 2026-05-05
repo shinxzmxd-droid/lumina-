@@ -248,6 +248,7 @@ function Page() {
                       <h4 className="font-display font-semibold flex items-center gap-2"><Users className="w-4 h-4" /> {g.name}</h4>
                       <Badge variant="outline" className="mt-1">{g.semester}</Badge>
                     </div>
+                    <Button size="icon" variant="ghost" onClick={()=>editGroup(g)}><Pencil className="w-4 h-4" /></Button>
                     <Button size="icon" variant="ghost" onClick={()=>deleteGroup(g.id)}><Trash2 className="w-4 h-4" /></Button>
                   </div>
                   <div className="space-y-1">
