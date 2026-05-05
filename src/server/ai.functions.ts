@@ -29,17 +29,40 @@ async function callAI(systemPrompt: string, userPrompt: string) {
   return data?.choices?.[0]?.message?.content ?? "";
 }
 
+const BLOCKED_PATTERNS = [
+  /\b(porn|pornograph|xxx|nsfw|nude|naked|sex(ual)?|erotic|hentai|fetish|orgasm|masturbat|escort|hookup)\b/i,
+  /\b(gore|behead|murder\s+how|kill\s+(myself|someone)|suicide\s+method|self[-\s]?harm)\b/i,
+  /\b(make\s+(a\s+)?(bomb|explosive|meth|cocaine|heroin)|how\s+to\s+(buy|cook|synthes(ize|ise))\s+(drugs|meth|cocaine))\b/i,
+  /\b(child\s+(porn|abuse)|cp|csam|underage\s+sex)\b/i,
+];
+
+function isBlocked(q: string): { blocked: boolean; reason?: string } {
+  for (const re of BLOCKED_PATTERNS) {
+    if (re.test(q)) return { blocked: true, reason: re.source };
+  }
+  return { blocked: false };
+}
+
 export const askTutor = createServerFn({ method: "POST" })
   .inputValidator((d) =>
     z.object({
-      question: z.string().min(1),
+      question: z.string().min(1).max(2000),
       context: z.string().default(""),
       courseName: z.string().default(""),
     }).parse(d)
   )
   .handler(async ({ data }) => {
+    const block = isBlocked(data.question);
+    if (block.blocked) {
+      return {
+        answer:
+          "⚠️ I can't help with that. Lumina is an academic tutor and doesn't engage with adult, violent, or unsafe content. Try asking about your coursework, an assignment, or a concept you'd like to understand better.",
+        blocked: true,
+      };
+    }
     const sys = `You are Lumina, a friendly voice-first AI tutor for college students.
 Course: ${data.courseName || "General"}.
+SAFETY: You are strictly an academic assistant. Refuse adult/sexual, graphic violence, illegal-drug synthesis, self-harm, or any age-restricted ("A-rated") content with a brief redirect to study topics.
 Ground answers strictly in the provided course material when relevant.
 Keep answers concise (2-4 short paragraphs), conversational, and easy to read aloud.
 If the student asks for a quiz, generate 3 short questions with answers.
@@ -50,7 +73,7 @@ Course material:
 ${data.context.slice(0, 8000) || "(no material uploaded — answer from general knowledge but say so briefly)"}
 """`;
     const text = await callAI(sys, data.question);
-    return { answer: text };
+    return { answer: text, blocked: false };
   });
 
 export const generateTimetable = createServerFn({ method: "POST" })
