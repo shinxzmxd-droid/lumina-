@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, PieChart, Pie, Cell, LineChart, Line } from "recharts";
-import { Users, BookOpen, ClipboardCheck, Sparkles, FileText, TrendingUp, ArrowUpRight, CalendarDays, Mic } from "lucide-react";
+import { Users, BookOpen, ClipboardCheck, Sparkles, FileText, TrendingUp, ArrowUpRight, CalendarDays, Mic, Megaphone, CalendarHeart } from "lucide-react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { HolidaysCalendar } from "@/components/HolidaysCalendar";
 
