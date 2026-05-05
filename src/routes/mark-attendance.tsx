@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, XCircle } from "lucide-react";
+import { CheckCircle2, XCircle, Upload, Download } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/mark-attendance")({
@@ -53,11 +53,41 @@ function Page() {
     toast.success(`Saved attendance for ${rows.length} students`);
   };
 
+  const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+
+  const handleImport = async (file: File, mode: "present" | "absent") => {
+    if (!students.length) return toast.error("Select a course with enrolled students first");
+    const text = await file.text();
+    const names = text.split(/\r?\n/).flatMap(l => l.split(",")).map(s => s.trim()).filter(Boolean);
+    if (!names.length) return toast.error("No names found in file");
+    const wanted = new Set(names.map(normalize));
+    const next = { ...present };
+    const matched: string[] = [];
+    const unmatched: string[] = [];
+    for (const s of students) {
+      const n = normalize(s.full_name || "");
+      if (wanted.has(n)) { next[s.user_id] = mode === "present"; matched.push(s.full_name); }
+    }
+    const matchedNorms = new Set(students.filter(s => wanted.has(normalize(s.full_name||""))).map(s => normalize(s.full_name||"")));
+    for (const n of names) if (!matchedNorms.has(normalize(n))) unmatched.push(n);
+    setPresent(next);
+    toast.success(`Marked ${matched.length} as ${mode}${unmatched.length ? ` · ${unmatched.length} unmatched` : ""}`);
+    if (unmatched.length) console.log("Unmatched names:", unmatched);
+  };
+
+  const downloadTemplate = () => {
+    const csv = "full_name\n" + students.map(s => s.full_name).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a"); a.href = url; a.download = "attendance-roster.csv"; a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold font-display">Mark attendance</h1>
-      <Card className="p-5 flex items-center gap-4">
-        <div className="flex-1 max-w-xs">
+      <Card className="p-5 flex flex-wrap items-center gap-3">
+        <div className="flex-1 min-w-[200px] max-w-xs">
           <Select value={courseId} onValueChange={setCourseId}>
             <SelectTrigger><SelectValue placeholder="Select course" /></SelectTrigger>
             <SelectContent>
@@ -66,7 +96,24 @@ function Page() {
           </Select>
         </div>
         <div className="text-sm text-muted-foreground">Session date: {date}</div>
-        {courseId && <Button onClick={save} className="ml-auto bg-gradient-primary shadow-glow">Save attendance</Button>}
+        {courseId && (
+          <div className="ml-auto flex flex-wrap items-center gap-2">
+            <Button variant="outline" size="sm" onClick={downloadTemplate} disabled={!students.length}>
+              <Download className="w-4 h-4 mr-1" /> Template
+            </Button>
+            <label className="inline-flex">
+              <input type="file" accept=".csv,.txt" className="hidden"
+                onChange={e => { const f = e.target.files?.[0]; if (f) handleImport(f, "present"); e.target.value = ""; }} />
+              <Button variant="outline" size="sm" asChild><span><Upload className="w-4 h-4 mr-1" /> Import present</span></Button>
+            </label>
+            <label className="inline-flex">
+              <input type="file" accept=".csv,.txt" className="hidden"
+                onChange={e => { const f = e.target.files?.[0]; if (f) handleImport(f, "absent"); e.target.value = ""; }} />
+              <Button variant="outline" size="sm" asChild><span><Upload className="w-4 h-4 mr-1" /> Import absent</span></Button>
+            </label>
+            <Button onClick={save} className="bg-gradient-primary shadow-glow">Save attendance</Button>
+          </div>
+        )}
       </Card>
 
       {courseId && (() => {
