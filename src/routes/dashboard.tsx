@@ -42,6 +42,8 @@ function StudentDash() {
   const { user } = useAuth();
   const [rows, setRows] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
+  const [announcements, setAnnouncements] = useState<any[]>([]);
+  const [events, setEvents] = useState<any[]>([]);
 
   useEffect(() => {
     if (!user) return;
@@ -54,6 +56,13 @@ function StudentDash() {
       const { data: en } = await supabase.from("enrollments")
         .select("courses(id,name,code)").eq("student_id", user.id);
       setCourses(en ?? []);
+      const { data: an } = await supabase.from("announcements")
+        .select("*").order("created_at", { ascending: false }).limit(5);
+      setAnnouncements(an ?? []);
+      const today = new Date().toISOString().slice(0,10);
+      const { data: ev } = await supabase.from("events")
+        .select("*").gte("event_date", today).order("event_date").limit(5);
+      setEvents(ev ?? []);
     })();
   }, [user]);
 
