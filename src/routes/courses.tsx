@@ -48,10 +48,22 @@ function Page() {
 
   const createCourse = async () => {
     if (!newCode || !newName) return;
+    const codeNorm = newCode.trim().toUpperCase();
+    const nameNorm = newName.trim().toLowerCase();
+    const dup = courses.find((c: any) =>
+      c && (c.code?.trim().toUpperCase() === codeNorm || c.name?.trim().toLowerCase() === nameNorm)
+    );
+    if (dup) return toast.error(`Course already present: ${dup.code} — ${dup.name}`);
+
     const { data: created, error } = await supabase.from("courses")
-      .insert({ code: newCode, name: newName, faculty_id: user!.id })
+      .insert({ code: codeNorm, name: newName.trim(), faculty_id: user!.id })
       .select("id").single();
-    if (error) return toast.error(error.message);
+    if (error) {
+      if ((error as any).code === "23505" || /duplicate/i.test(error.message)) {
+        return toast.error("Course already present");
+      }
+      return toast.error(error.message);
+    }
 
     let enrolled = 0;
     if (newClassId && newClassId !== "none" && created) {
@@ -66,6 +78,13 @@ function Page() {
     }
     toast.success(enrolled ? `Course created · ${enrolled} students enrolled` : "Course created");
     setNewCode(""); setNewName(""); setNewClassId("none"); setNewSemester("any"); setCreateOpen(false); load();
+  };
+
+  const deleteCourse = async (c: any) => {
+    if (!confirm(`Delete course "${c.code} — ${c.name}"? This removes its enrollments and materials.`)) return;
+    const { error } = await supabase.from("courses").delete().eq("id", c.id);
+    if (error) return toast.error(error.message);
+    toast.success("Course deleted"); load();
   };
 
   const enroll = async (cid: string) => {
