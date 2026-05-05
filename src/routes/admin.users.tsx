@@ -25,12 +25,6 @@ function Page() {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [form, setForm] = useState({ email: "", password: "", fullName: "", role: "faculty" as "student"|"faculty"|"admin" });
-  const [seedOpen, setSeedOpen] = useState(false);
-  const [seedBusy, setSeedBusy] = useState(false);
-  const [seedNames, setSeedNames] = useState("Dr. Sridevi K N\nMr. Vinay B V\nMrs. Rajitha K R\nProf. Manoji Rao\nMrs. Bhavana Nagaraj\nMrs. Nagarathana\nMr. C P Sathish Kumar\nDr. Sathyanarayana N\nMr. Rakesh B S\nMr. Deepu\nMrs. Vijayalakshmi R");
-  const [seedPassword, setSeedPassword] = useState("Lumina@123");
-  const [seedDomain, setSeedDomain] = useState("lumina.edu");
-  const [seedResult, setSeedResult] = useState<{ created: any[]; skipped: any[]; password: string } | null>(null);
 
   const load = async () => {
     const [{ data: p }, { data: r }] = await Promise.all([
@@ -69,34 +63,6 @@ function Page() {
   const studentsPending = profiles.filter(p => !p.approved && isStudent(p.user_id));
   const approved = profiles.filter(p => p.approved);
 
-  const seed = async () => {
-    const names = seedNames.split("\n").map(s => s.trim()).filter(Boolean);
-    if (names.length === 0) return toast.error("Add at least one name");
-    setSeedBusy(true);
-    try {
-      const r: any = await adminSeedFaculty({ data: { names, password: seedPassword, domain: seedDomain } });
-      console.log("[seedFaculty] response:", r);
-      const safe = {
-        created: Array.isArray(r?.created) ? r.created : [],
-        skipped: Array.isArray(r?.skipped) ? r.skipped : [],
-        password: r?.password ?? seedPassword,
-      };
-      setSeedResult(safe);
-      toast.success(`Created ${safe.created.length} faculty${safe.skipped.length ? `, skipped ${safe.skipped.length}` : ""}`);
-      load();
-    } catch (e: any) {
-      console.error("[seedFaculty] error:", e);
-      toast.error(e?.message || "Failed to seed faculty");
-    }
-    finally { setSeedBusy(false); }
-  };
-
-  const copyAll = () => {
-    if (!seedResult) return;
-    const text = seedResult.created.map(c => `${c.name} — ${c.email} / ${seedResult.password}`).join("\n");
-    navigator.clipboard.writeText(text);
-    toast.success("Copied to clipboard");
-  };
 
   return (
     <div className="space-y-6">
