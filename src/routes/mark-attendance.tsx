@@ -100,19 +100,9 @@ function Page() {
         <div className="text-sm text-muted-foreground">Session date: {date}</div>
         {courseId && (
           <div className="ml-auto flex flex-wrap items-center gap-2">
-            <Button variant="outline" size="sm" onClick={downloadTemplate} disabled={!students.length}>
-              <Download className="w-4 h-4 mr-1" /> Template
+            <Button variant="outline" size="sm" onClick={downloadTodaysAttendance} disabled={!students.length}>
+              <Download className="w-4 h-4 mr-1" /> Download today's attendance
             </Button>
-            <label className="inline-flex">
-              <input type="file" accept=".csv,.txt" className="hidden"
-                onChange={e => { const f = e.target.files?.[0]; if (f) handleImport(f, "present"); e.target.value = ""; }} />
-              <Button variant="outline" size="sm" asChild><span><Upload className="w-4 h-4 mr-1" /> Import present</span></Button>
-            </label>
-            <label className="inline-flex">
-              <input type="file" accept=".csv,.txt" className="hidden"
-                onChange={e => { const f = e.target.files?.[0]; if (f) handleImport(f, "absent"); e.target.value = ""; }} />
-              <Button variant="outline" size="sm" asChild><span><Upload className="w-4 h-4 mr-1" /> Import absent</span></Button>
-            </label>
             <Button onClick={save} className="bg-gradient-primary shadow-glow">Save attendance</Button>
           </div>
         )}
