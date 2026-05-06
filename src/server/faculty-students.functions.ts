@@ -71,18 +71,45 @@ export const bulkAddStudentsByName = createServerFn({ method: "POST" })
     const matched: { id: string; name: string }[] = [];
     const unmatched: string[] = [];
     const updates: string[] = []; // ids to assign + approve
+    const skipHeader = new Set(["student name", "name", "student", "full name", "s no", "sno", "sl no", "roll no", "roll number"]);
 
     for (const raw of data.names) {
       const nn = norm(raw);
-      if (!nn) continue;
+      if (!nn || skipHeader.has(nn)) continue;
       const hit = (profiles ?? []).find((p: any) => {
         const sn = norm(p.full_name ?? "");
         return sn && (sn === nn || sn.includes(nn) || nn.includes(sn));
       });
-      if (hit && !existingIds.has(hit.user_id) && !matched.some(m => m.id === hit.user_id)) {
-        matched.push({ id: hit.user_id, name: hit.full_name });
-        if (hit.assigned_faculty_id !== context.userId || !hit.approved) updates.push(hit.user_id);
-      } else if (!hit) unmatched.push(raw);
+      if (hit) {
+        if (!existingIds.has(hit.user_id) && !matched.some(m => m.id === hit.user_id)) {
+          matched.push({ id: hit.user_id, name: hit.full_name });
+          if (hit.assigned_faculty_id !== context.userId || !hit.approved) updates.push(hit.user_id);
+        }
+      } else {
+        // Auto-create a roster student account for this name
+        const slug = nn.replace(/\s+/g, ".").slice(0, 40);
+        const email = `${slug}.${Math.random().toString(36).slice(2, 8)}@roster.lumina.local`;
+        const { data: created, error: createErr } = await supabaseAdmin.auth.admin.createUser({
+          email,
+          password: crypto.randomUUID() + "Aa1!",
+          email_confirm: true,
+          user_metadata: {
+            full_name: raw.trim(),
+            role: "student",
+            created_by_admin: true,
+            assigned_faculty_id: context.userId,
+          },
+        });
+        if (createErr || !created?.user) {
+          unmatched.push(raw);
+          continue;
+        }
+        // ensure profile reflects assignment + approval (in case trigger didn't pick it up)
+        await supabaseAdmin.from("profiles")
+          .update({ full_name: raw.trim(), assigned_faculty_id: context.userId, approved: true })
+          .eq("user_id", created.user.id);
+        matched.push({ id: created.user.id, name: raw.trim() });
+      }
     }
 
     if (updates.length) {
