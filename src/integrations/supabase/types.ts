@@ -354,6 +354,48 @@ export type Database = {
         }
         Relationships: []
       }
+      results: {
+        Row: {
+          course_id: string | null
+          created_at: string
+          created_by: string | null
+          exam_name: string
+          grade: string | null
+          id: string
+          marks_obtained: number
+          max_marks: number
+          remarks: string | null
+          semester: string | null
+          student_id: string
+        }
+        Insert: {
+          course_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          exam_name: string
+          grade?: string | null
+          id?: string
+          marks_obtained?: number
+          max_marks?: number
+          remarks?: string | null
+          semester?: string | null
+          student_id: string
+        }
+        Update: {
+          course_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          exam_name?: string
+          grade?: string | null
+          id?: string
+          marks_obtained?: number
+          max_marks?: number
+          remarks?: string | null
+          semester?: string | null
+          student_id?: string
+        }
+        Relationships: []
+      }
       student_leaves: {
         Row: {
           course_id: string | null
