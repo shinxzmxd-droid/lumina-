@@ -31,14 +31,15 @@ function Page() {
   useEffect(() => {
     if (!courseId) return;
     (async () => {
-      const { data: enr } = await supabase.from("enrollments").select("student_id").eq("course_id", courseId);
-      const ids = (enr ?? []).map((e: any) => e.student_id);
-      if (ids.length === 0) { setStudents([]); setPresent({}); return; }
-      const { data: profs } = await supabase.from("profiles").select("*").in("user_id", ids);
-      const sorted = (profs ?? []).sort((a, b) => (a.full_name || "").localeCompare(b.full_name || ""));
-      setStudents(sorted);
+      // Pull all students assigned to this faculty ("My Students")
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("user_id, full_name, approved, assigned_faculty_id")
+        .eq("assigned_faculty_id", user!.id);
+      const list = (profs ?? []).sort((a, b) => (a.full_name || "").localeCompare(b.full_name || ""));
+      setStudents(list);
       const init: Record<string, boolean> = {};
-      ids.forEach((id: string) => init[id] = true);
+      list.forEach((s: any) => { init[s.user_id] = true; });
       setPresent(init);
     })();
   }, [courseId]);
