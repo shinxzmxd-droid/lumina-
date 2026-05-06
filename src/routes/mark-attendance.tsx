@@ -76,11 +76,12 @@ function Page() {
     if (unmatched.length) console.log("Unmatched names:", unmatched);
   };
 
-  const downloadTemplate = () => {
-    const csv = "full_name\n" + students.map(s => s.full_name).join("\n");
+  const downloadTodaysAttendance = () => {
+    const rows = [["full_name", "status"], ...students.map(s => [s.full_name, (present[s.user_id] ?? true) ? "Present" : "Absent"])];
+    const csv = rows.map(r => r.map(v => `"${(v ?? "").toString().replace(/"/g, '""')}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a"); a.href = url; a.download = "attendance-roster.csv"; a.click();
+    const a = document.createElement("a"); a.href = url; a.download = `attendance-${date}.csv`; a.click();
     URL.revokeObjectURL(url);
   };
 
