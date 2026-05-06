@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TutorRouteImport } from './routes/tutor'
 import { Route as TimetableRouteImport } from './routes/timetable'
 import { Route as StudentLeavesRouteImport } from './routes/student-leaves'
+import { Route as ResultsRouteImport } from './routes/results'
 import { Route as MaterialsRouteImport } from './routes/materials'
 import { Route as MarkAttendanceRouteImport } from './routes/mark-attendance'
 import { Route as LeavesRouteImport } from './routes/leaves'
@@ -43,6 +44,11 @@ const TimetableRoute = TimetableRouteImport.update({
 const StudentLeavesRoute = StudentLeavesRouteImport.update({
   id: '/student-leaves',
   path: '/student-leaves',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResultsRoute = ResultsRouteImport.update({
+  id: '/results',
+  path: '/results',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MaterialsRoute = MaterialsRouteImport.update({
@@ -142,6 +148,7 @@ export interface FileRoutesByFullPath {
   '/leaves': typeof LeavesRoute
   '/mark-attendance': typeof MarkAttendanceRoute
   '/materials': typeof MaterialsRoute
+  '/results': typeof ResultsRoute
   '/student-leaves': typeof StudentLeavesRoute
   '/timetable': typeof TimetableRoute
   '/tutor': typeof TutorRoute
@@ -164,6 +171,7 @@ export interface FileRoutesByTo {
   '/leaves': typeof LeavesRoute
   '/mark-attendance': typeof MarkAttendanceRoute
   '/materials': typeof MaterialsRoute
+  '/results': typeof ResultsRoute
   '/student-leaves': typeof StudentLeavesRoute
   '/timetable': typeof TimetableRoute
   '/tutor': typeof TutorRoute
@@ -187,6 +195,7 @@ export interface FileRoutesById {
   '/leaves': typeof LeavesRoute
   '/mark-attendance': typeof MarkAttendanceRoute
   '/materials': typeof MaterialsRoute
+  '/results': typeof ResultsRoute
   '/student-leaves': typeof StudentLeavesRoute
   '/timetable': typeof TimetableRoute
   '/tutor': typeof TutorRoute
@@ -211,6 +220,7 @@ export interface FileRouteTypes {
     | '/leaves'
     | '/mark-attendance'
     | '/materials'
+    | '/results'
     | '/student-leaves'
     | '/timetable'
     | '/tutor'
@@ -233,6 +243,7 @@ export interface FileRouteTypes {
     | '/leaves'
     | '/mark-attendance'
     | '/materials'
+    | '/results'
     | '/student-leaves'
     | '/timetable'
     | '/tutor'
@@ -255,6 +266,7 @@ export interface FileRouteTypes {
     | '/leaves'
     | '/mark-attendance'
     | '/materials'
+    | '/results'
     | '/student-leaves'
     | '/timetable'
     | '/tutor'
@@ -278,6 +290,7 @@ export interface RootRouteChildren {
   LeavesRoute: typeof LeavesRoute
   MarkAttendanceRoute: typeof MarkAttendanceRoute
   MaterialsRoute: typeof MaterialsRoute
+  ResultsRoute: typeof ResultsRoute
   StudentLeavesRoute: typeof StudentLeavesRoute
   TimetableRoute: typeof TimetableRoute
   TutorRoute: typeof TutorRoute
@@ -311,6 +324,13 @@ declare module '@tanstack/react-router' {
       path: '/student-leaves'
       fullPath: '/student-leaves'
       preLoaderRoute: typeof StudentLeavesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/results': {
+      id: '/results'
+      path: '/results'
+      fullPath: '/results'
+      preLoaderRoute: typeof ResultsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/materials': {
@@ -446,6 +466,7 @@ const rootRouteChildren: RootRouteChildren = {
   LeavesRoute: LeavesRoute,
   MarkAttendanceRoute: MarkAttendanceRoute,
   MaterialsRoute: MaterialsRoute,
+  ResultsRoute: ResultsRoute,
   StudentLeavesRoute: StudentLeavesRoute,
   TimetableRoute: TimetableRoute,
   TutorRoute: TutorRoute,
@@ -460,3 +481,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
