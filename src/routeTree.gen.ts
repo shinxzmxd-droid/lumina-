@@ -25,6 +25,7 @@ import { Route as AnnouncementsRouteImport } from './routes/announcements'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as FacultyTimetableRouteImport } from './routes/faculty.timetable'
 import { Route as FacultyStudentsRouteImport } from './routes/faculty.students'
+import { Route as FacultyResultsRouteImport } from './routes/faculty.results'
 import { Route as FacultyOnboardingRouteImport } from './routes/faculty.onboarding'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminTimetableRouteImport } from './routes/admin.timetable'
@@ -111,6 +112,11 @@ const FacultyStudentsRoute = FacultyStudentsRouteImport.update({
   path: '/faculty/students',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FacultyResultsRoute = FacultyResultsRouteImport.update({
+  id: '/faculty/results',
+  path: '/faculty/results',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FacultyOnboardingRoute = FacultyOnboardingRouteImport.update({
   id: '/faculty/onboarding',
   path: '/faculty/onboarding',
@@ -157,6 +163,7 @@ export interface FileRoutesByFullPath {
   '/admin/timetable': typeof AdminTimetableRoute
   '/admin/users': typeof AdminUsersRoute
   '/faculty/onboarding': typeof FacultyOnboardingRoute
+  '/faculty/results': typeof FacultyResultsRoute
   '/faculty/students': typeof FacultyStudentsRoute
   '/faculty/timetable': typeof FacultyTimetableRoute
 }
@@ -180,6 +187,7 @@ export interface FileRoutesByTo {
   '/admin/timetable': typeof AdminTimetableRoute
   '/admin/users': typeof AdminUsersRoute
   '/faculty/onboarding': typeof FacultyOnboardingRoute
+  '/faculty/results': typeof FacultyResultsRoute
   '/faculty/students': typeof FacultyStudentsRoute
   '/faculty/timetable': typeof FacultyTimetableRoute
 }
@@ -204,6 +212,7 @@ export interface FileRoutesById {
   '/admin/timetable': typeof AdminTimetableRoute
   '/admin/users': typeof AdminUsersRoute
   '/faculty/onboarding': typeof FacultyOnboardingRoute
+  '/faculty/results': typeof FacultyResultsRoute
   '/faculty/students': typeof FacultyStudentsRoute
   '/faculty/timetable': typeof FacultyTimetableRoute
 }
@@ -229,6 +238,7 @@ export interface FileRouteTypes {
     | '/admin/timetable'
     | '/admin/users'
     | '/faculty/onboarding'
+    | '/faculty/results'
     | '/faculty/students'
     | '/faculty/timetable'
   fileRoutesByTo: FileRoutesByTo
@@ -252,6 +262,7 @@ export interface FileRouteTypes {
     | '/admin/timetable'
     | '/admin/users'
     | '/faculty/onboarding'
+    | '/faculty/results'
     | '/faculty/students'
     | '/faculty/timetable'
   id:
@@ -275,6 +286,7 @@ export interface FileRouteTypes {
     | '/admin/timetable'
     | '/admin/users'
     | '/faculty/onboarding'
+    | '/faculty/results'
     | '/faculty/students'
     | '/faculty/timetable'
   fileRoutesById: FileRoutesById
@@ -299,6 +311,7 @@ export interface RootRouteChildren {
   AdminTimetableRoute: typeof AdminTimetableRoute
   AdminUsersRoute: typeof AdminUsersRoute
   FacultyOnboardingRoute: typeof FacultyOnboardingRoute
+  FacultyResultsRoute: typeof FacultyResultsRoute
   FacultyStudentsRoute: typeof FacultyStudentsRoute
   FacultyTimetableRoute: typeof FacultyTimetableRoute
 }
@@ -417,6 +430,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FacultyStudentsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/faculty/results': {
+      id: '/faculty/results'
+      path: '/faculty/results'
+      fullPath: '/faculty/results'
+      preLoaderRoute: typeof FacultyResultsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/faculty/onboarding': {
       id: '/faculty/onboarding'
       path: '/faculty/onboarding'
@@ -475,6 +495,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminTimetableRoute: AdminTimetableRoute,
   AdminUsersRoute: AdminUsersRoute,
   FacultyOnboardingRoute: FacultyOnboardingRoute,
+  FacultyResultsRoute: FacultyResultsRoute,
   FacultyStudentsRoute: FacultyStudentsRoute,
   FacultyTimetableRoute: FacultyTimetableRoute,
 }
