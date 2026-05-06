@@ -2,7 +2,7 @@ import { Link, useNavigate, useLocation } from "@tanstack/react-router";
 import { useAuth, AppRole } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { GraduationCap, LayoutDashboard, Users, Calendar, BookOpen, LogOut, Sparkles, ClipboardCheck, FileText, BrainCircuit, Menu, Megaphone } from "lucide-react";
+import { GraduationCap, LayoutDashboard, Users, Calendar, BookOpen, LogOut, Sparkles, ClipboardCheck, FileText, BrainCircuit, Menu, Megaphone, Award } from "lucide-react";
 import { ReactNode, useState } from "react";
 
 const navByRole: Record<AppRole, { to: string; label: string; icon: any }[]> = {
