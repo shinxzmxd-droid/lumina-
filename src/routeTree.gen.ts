@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TutorRouteImport } from './routes/tutor'
 import { Route as TimetableRouteImport } from './routes/timetable'
 import { Route as StudentLeavesRouteImport } from './routes/student-leaves'
+import { Route as ResultsRouteImport } from './routes/results'
 import { Route as MaterialsRouteImport } from './routes/materials'
 import { Route as MarkAttendanceRouteImport } from './routes/mark-attendance'
 import { Route as LeavesRouteImport } from './routes/leaves'
@@ -24,6 +25,7 @@ import { Route as AnnouncementsRouteImport } from './routes/announcements'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as FacultyTimetableRouteImport } from './routes/faculty.timetable'
 import { Route as FacultyStudentsRouteImport } from './routes/faculty.students'
+import { Route as FacultyResultsRouteImport } from './routes/faculty.results'
 import { Route as FacultyOnboardingRouteImport } from './routes/faculty.onboarding'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminTimetableRouteImport } from './routes/admin.timetable'
@@ -43,6 +45,11 @@ const TimetableRoute = TimetableRouteImport.update({
 const StudentLeavesRoute = StudentLeavesRouteImport.update({
   id: '/student-leaves',
   path: '/student-leaves',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResultsRoute = ResultsRouteImport.update({
+  id: '/results',
+  path: '/results',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MaterialsRoute = MaterialsRouteImport.update({
@@ -105,6 +112,11 @@ const FacultyStudentsRoute = FacultyStudentsRouteImport.update({
   path: '/faculty/students',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FacultyResultsRoute = FacultyResultsRouteImport.update({
+  id: '/faculty/results',
+  path: '/faculty/results',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FacultyOnboardingRoute = FacultyOnboardingRouteImport.update({
   id: '/faculty/onboarding',
   path: '/faculty/onboarding',
@@ -142,6 +154,7 @@ export interface FileRoutesByFullPath {
   '/leaves': typeof LeavesRoute
   '/mark-attendance': typeof MarkAttendanceRoute
   '/materials': typeof MaterialsRoute
+  '/results': typeof ResultsRoute
   '/student-leaves': typeof StudentLeavesRoute
   '/timetable': typeof TimetableRoute
   '/tutor': typeof TutorRoute
@@ -150,6 +163,7 @@ export interface FileRoutesByFullPath {
   '/admin/timetable': typeof AdminTimetableRoute
   '/admin/users': typeof AdminUsersRoute
   '/faculty/onboarding': typeof FacultyOnboardingRoute
+  '/faculty/results': typeof FacultyResultsRoute
   '/faculty/students': typeof FacultyStudentsRoute
   '/faculty/timetable': typeof FacultyTimetableRoute
 }
@@ -164,6 +178,7 @@ export interface FileRoutesByTo {
   '/leaves': typeof LeavesRoute
   '/mark-attendance': typeof MarkAttendanceRoute
   '/materials': typeof MaterialsRoute
+  '/results': typeof ResultsRoute
   '/student-leaves': typeof StudentLeavesRoute
   '/timetable': typeof TimetableRoute
   '/tutor': typeof TutorRoute
@@ -172,6 +187,7 @@ export interface FileRoutesByTo {
   '/admin/timetable': typeof AdminTimetableRoute
   '/admin/users': typeof AdminUsersRoute
   '/faculty/onboarding': typeof FacultyOnboardingRoute
+  '/faculty/results': typeof FacultyResultsRoute
   '/faculty/students': typeof FacultyStudentsRoute
   '/faculty/timetable': typeof FacultyTimetableRoute
 }
@@ -187,6 +203,7 @@ export interface FileRoutesById {
   '/leaves': typeof LeavesRoute
   '/mark-attendance': typeof MarkAttendanceRoute
   '/materials': typeof MaterialsRoute
+  '/results': typeof ResultsRoute
   '/student-leaves': typeof StudentLeavesRoute
   '/timetable': typeof TimetableRoute
   '/tutor': typeof TutorRoute
@@ -195,6 +212,7 @@ export interface FileRoutesById {
   '/admin/timetable': typeof AdminTimetableRoute
   '/admin/users': typeof AdminUsersRoute
   '/faculty/onboarding': typeof FacultyOnboardingRoute
+  '/faculty/results': typeof FacultyResultsRoute
   '/faculty/students': typeof FacultyStudentsRoute
   '/faculty/timetable': typeof FacultyTimetableRoute
 }
@@ -211,6 +229,7 @@ export interface FileRouteTypes {
     | '/leaves'
     | '/mark-attendance'
     | '/materials'
+    | '/results'
     | '/student-leaves'
     | '/timetable'
     | '/tutor'
@@ -219,6 +238,7 @@ export interface FileRouteTypes {
     | '/admin/timetable'
     | '/admin/users'
     | '/faculty/onboarding'
+    | '/faculty/results'
     | '/faculty/students'
     | '/faculty/timetable'
   fileRoutesByTo: FileRoutesByTo
@@ -233,6 +253,7 @@ export interface FileRouteTypes {
     | '/leaves'
     | '/mark-attendance'
     | '/materials'
+    | '/results'
     | '/student-leaves'
     | '/timetable'
     | '/tutor'
@@ -241,6 +262,7 @@ export interface FileRouteTypes {
     | '/admin/timetable'
     | '/admin/users'
     | '/faculty/onboarding'
+    | '/faculty/results'
     | '/faculty/students'
     | '/faculty/timetable'
   id:
@@ -255,6 +277,7 @@ export interface FileRouteTypes {
     | '/leaves'
     | '/mark-attendance'
     | '/materials'
+    | '/results'
     | '/student-leaves'
     | '/timetable'
     | '/tutor'
@@ -263,6 +286,7 @@ export interface FileRouteTypes {
     | '/admin/timetable'
     | '/admin/users'
     | '/faculty/onboarding'
+    | '/faculty/results'
     | '/faculty/students'
     | '/faculty/timetable'
   fileRoutesById: FileRoutesById
@@ -278,6 +302,7 @@ export interface RootRouteChildren {
   LeavesRoute: typeof LeavesRoute
   MarkAttendanceRoute: typeof MarkAttendanceRoute
   MaterialsRoute: typeof MaterialsRoute
+  ResultsRoute: typeof ResultsRoute
   StudentLeavesRoute: typeof StudentLeavesRoute
   TimetableRoute: typeof TimetableRoute
   TutorRoute: typeof TutorRoute
@@ -286,6 +311,7 @@ export interface RootRouteChildren {
   AdminTimetableRoute: typeof AdminTimetableRoute
   AdminUsersRoute: typeof AdminUsersRoute
   FacultyOnboardingRoute: typeof FacultyOnboardingRoute
+  FacultyResultsRoute: typeof FacultyResultsRoute
   FacultyStudentsRoute: typeof FacultyStudentsRoute
   FacultyTimetableRoute: typeof FacultyTimetableRoute
 }
@@ -311,6 +337,13 @@ declare module '@tanstack/react-router' {
       path: '/student-leaves'
       fullPath: '/student-leaves'
       preLoaderRoute: typeof StudentLeavesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/results': {
+      id: '/results'
+      path: '/results'
+      fullPath: '/results'
+      preLoaderRoute: typeof ResultsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/materials': {
@@ -397,6 +430,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FacultyStudentsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/faculty/results': {
+      id: '/faculty/results'
+      path: '/faculty/results'
+      fullPath: '/faculty/results'
+      preLoaderRoute: typeof FacultyResultsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/faculty/onboarding': {
       id: '/faculty/onboarding'
       path: '/faculty/onboarding'
@@ -446,6 +486,7 @@ const rootRouteChildren: RootRouteChildren = {
   LeavesRoute: LeavesRoute,
   MarkAttendanceRoute: MarkAttendanceRoute,
   MaterialsRoute: MaterialsRoute,
+  ResultsRoute: ResultsRoute,
   StudentLeavesRoute: StudentLeavesRoute,
   TimetableRoute: TimetableRoute,
   TutorRoute: TutorRoute,
@@ -454,6 +495,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminTimetableRoute: AdminTimetableRoute,
   AdminUsersRoute: AdminUsersRoute,
   FacultyOnboardingRoute: FacultyOnboardingRoute,
+  FacultyResultsRoute: FacultyResultsRoute,
   FacultyStudentsRoute: FacultyStudentsRoute,
   FacultyTimetableRoute: FacultyTimetableRoute,
 }
