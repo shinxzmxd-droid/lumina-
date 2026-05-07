@@ -9,6 +9,7 @@ import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, PieChart, Pi
 import { Users, BookOpen, ClipboardCheck, Sparkles, FileText, TrendingUp, ArrowUpRight, CalendarDays, Mic, Megaphone, CalendarHeart } from "lucide-react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { HolidaysCalendar } from "@/components/HolidaysCalendar";
+import { CountUp, FloatingBlobs } from "@/components/Pastel";
 
 export const Route = createFileRoute("/dashboard")({
   component: () => <RequireAuth><DashboardRouter /></RequireAuth>,
