@@ -288,9 +288,7 @@ function FacultyMaterials({ courseId }: { courseId: string }) {
           <DialogHeader><DialogTitle>Course materials</DialogTitle></DialogHeader>
           <div className="space-y-3">
             {items.length === 0 && <p className="text-sm text-muted-foreground">No materials yet.</p>}
-            {items.map(m => {
-              const url = fileUrl(m);
-              return (
+            {items.map(m => (
                 <div key={m.id} className="border rounded-lg p-3 flex flex-col sm:flex-row sm:items-start gap-3">
                   <FileText className="w-5 h-5 text-accent shrink-0 mt-0.5" />
                   <div className="flex-1 min-w-0">
@@ -298,17 +296,16 @@ function FacultyMaterials({ courseId }: { courseId: string }) {
                     {m.content && <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{m.content}</p>}
                   </div>
                   <div className="flex gap-2 flex-wrap">
-                    {url && (
-                      <Button size="sm" variant="outline" asChild>
-                        <a href={url} target="_blank" rel="noopener noreferrer"><Download className="w-3 h-3 mr-1" />Open</a>
+                    {m.file_url && (
+                      <Button size="sm" variant="outline" onClick={() => openMaterial(m)}>
+                        <Download className="w-3 h-3 mr-1" />Open
                       </Button>
                     )}
                     <Button size="sm" variant="outline" onClick={() => startEdit(m)}><Pencil className="w-3 h-3" /></Button>
                     <Button size="sm" variant="destructive" onClick={() => remove(m)}><Trash2 className="w-3 h-3" /></Button>
                   </div>
                 </div>
-              );
-            })}
+              ))}
           </div>
         </DialogContent>
       </Dialog>
