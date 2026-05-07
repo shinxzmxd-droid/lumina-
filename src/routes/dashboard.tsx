@@ -256,16 +256,17 @@ function FacultyDash() {
   }, [user]);
 
   return (
-    <div className="-m-4 md:-m-6 lg:-m-8 p-6 md:p-10 min-h-[calc(100vh-4rem)] bg-pastel-cream text-pastel-ink">
-      <div className="max-w-7xl mx-auto flex flex-col gap-8">
-        <div className="flex items-start justify-between gap-4">
+    <div className="relative -m-4 md:-m-6 lg:-m-8 p-6 md:p-10 min-h-[calc(100vh-4rem)] bg-pastel-cream text-pastel-ink overflow-hidden">
+      <FloatingBlobs />
+      <div className="relative max-w-7xl mx-auto flex flex-col gap-8">
+        <div className="flex items-start justify-between gap-4 animate-fade-up">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold font-display">Faculty workspace ✨</h1>
-            <p className="text-pastel-muted mt-1">Manage your courses, students and attendance.</p>
+            <h1 className="text-4xl md:text-5xl font-display">Faculty workspace</h1>
+            <p className="text-pastel-muted mt-2">Manage your courses, students and attendance.</p>
           </div>
-          <div className="hidden md:flex items-center gap-3 bg-white rounded-2xl px-5 py-3 shadow-sm">
+          <div className="hidden md:flex items-center gap-3 bg-white/80 backdrop-blur rounded-2xl px-5 py-3 shadow-elegant">
             <div className="text-xs uppercase tracking-wider text-pastel-muted">Students</div>
-            <div className="text-2xl font-bold">{stats.students}</div>
+            <div className="text-2xl font-display"><CountUp value={stats.students} /></div>
           </div>
         </div>
 
