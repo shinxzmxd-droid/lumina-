@@ -67,25 +67,29 @@ function NavList({ items, pathname, onNavigate }: { items: any[]; pathname: stri
 
 function SidebarInner({ items, pathname, user, role, onSignOut, onNavigate }: any) {
   return (
-    <div className="flex flex-col h-full p-4 bg-sidebar text-sidebar-foreground">
-      <Link to="/dashboard" onClick={onNavigate} className="flex items-center gap-2 px-2 py-3 mb-6">
-        <div className="w-9 h-9 rounded-lg bg-gradient-primary grid place-items-center shadow-glow">
-          <GraduationCap className="w-5 h-5 text-primary-foreground" />
+    <div className="relative flex flex-col h-full p-4 bg-gradient-sidebar text-pastel-ink overflow-hidden">
+      <div className="blob blob-lavender w-48 h-48 -top-10 -left-10 opacity-40" aria-hidden />
+      <div className="blob blob-pink w-40 h-40 bottom-20 -right-10 opacity-30 animate-blob-slow" aria-hidden />
+      <Link to="/dashboard" onClick={onNavigate} className="relative flex items-center gap-2 px-2 py-3 mb-6">
+        <div className="w-10 h-10 rounded-2xl bg-white/70 backdrop-blur grid place-items-center shadow-elegant">
+          <GraduationCap className="w-5 h-5 text-pastel-lavender-strong" />
         </div>
         <div>
-          <div className="font-display font-bold text-lg leading-none">Lumina</div>
+          <div className="font-display text-2xl leading-none">Lumina</div>
         </div>
       </Link>
-      <NavList items={items} pathname={pathname} onNavigate={onNavigate} />
-      <div className="border-t border-sidebar-border pt-4 mt-4">
+      <div className="relative flex-1 overflow-y-auto">
+        <NavList items={items} pathname={pathname} onNavigate={onNavigate} />
+      </div>
+      <div className="relative border-t border-white/40 pt-4 mt-4">
         <div className="px-2 pb-3">
           <div className="text-sm font-medium truncate">{user?.email}</div>
-          <div className="text-xs text-sidebar-foreground/60 capitalize">{role}</div>
+          <div className="text-xs text-pastel-muted capitalize">{role}</div>
         </div>
         <Button
           variant="ghost"
           size="sm"
-          className="w-full justify-start text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
+          className="w-full justify-start text-pastel-ink hover:bg-white/50"
           onClick={onSignOut}
         >
           <LogOut className="w-4 h-4 mr-2" /> Sign out
