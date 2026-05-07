@@ -78,40 +78,30 @@ function Page() {
                       <h3 className="font-medium truncate">{m.title}</h3>
                       {m.content && <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{m.content}</p>}
                       <div className="mt-2 flex gap-2">
-                        {m.file_url && (() => {
-                          const url = m.file_url.startsWith("http")
-                            ? m.file_url
-                            : supabase.storage.from("course-materials").getPublicUrl(m.file_url).data.publicUrl;
-                          const filename = url.split("/").pop()?.split("?")[0] ?? "file";
-                          const openInNewTab = () => {
-                            const w = window.open(url, "_blank", "noopener,noreferrer");
-                            if (!w) {
-                              // popup blocked: navigate top frame instead
-                              window.top ? (window.top.location.href = url) : (window.location.href = url);
-                            }
-                          };
-                          const downloadFile = async () => {
+                        {m.file_url && (
+                          <Button size="sm" variant="outline" onClick={async () => {
+                            const path = m.file_url.startsWith("http")
+                              ? m.file_url.split("/course-materials/")[1]
+                              : m.file_url;
+                            if (!path) return;
+                            const { data } = await supabase.storage.from("course-materials").createSignedUrl(path, 60);
+                            if (!data?.signedUrl) return;
+                            const filename = path.split("/").pop() ?? "file";
                             try {
-                              const res = await fetch(url);
+                              const res = await fetch(data.signedUrl);
                               const blob = await res.blob();
                               const blobUrl = URL.createObjectURL(blob);
                               const a = document.createElement("a");
-                              a.href = blobUrl;
-                              a.download = filename;
-                              document.body.appendChild(a);
-                              a.click();
-                              a.remove();
+                              a.href = blobUrl; a.download = filename;
+                              document.body.appendChild(a); a.click(); a.remove();
                               setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
                             } catch {
-                              openInNewTab();
+                              window.open(data.signedUrl, "_blank", "noopener,noreferrer");
                             }
-                          };
-                          return (
-                            <Button size="sm" variant="outline" onClick={downloadFile}>
-                              <Download className="w-3 h-3 mr-1" /> Download
-                            </Button>
-                          );
-                        })()}
+                          }}>
+                            <Download className="w-3 h-3 mr-1" /> Download
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </div>
