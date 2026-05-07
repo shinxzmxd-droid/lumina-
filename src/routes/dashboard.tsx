@@ -190,16 +190,16 @@ function StudentDash() {
 
 function PastelTile({ to, tone, icon: Icon, title, subtitle }: { to: string; tone: string; icon: any; title: string; subtitle: string }) {
   return (
-    <Link to={to} className={`group relative ${tone} rounded-3xl p-6 shadow-sm hover:shadow-lg transition-shadow duration-300 flex flex-col gap-6 min-h-[160px]`}>
+    <Link to={to} className={`group relative ${tone} rounded-3xl p-6 hover-lift shadow-elegant flex flex-col gap-6 min-h-[160px] overflow-hidden`}>
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-full bg-white/60 grid place-items-center">
+        <div className="w-10 h-10 rounded-full bg-white/70 grid place-items-center">
           <Icon className="w-5 h-5 text-pastel-ink" />
         </div>
         <span className="text-xs uppercase tracking-wider text-pastel-ink/60">Open</span>
       </div>
       <div className="mt-auto flex items-end justify-between">
         <div>
-          <h3 className="text-xl font-bold font-display text-pastel-ink">{title}</h3>
+          <h3 className="text-2xl font-display text-pastel-ink">{title}</h3>
           <p className="text-sm text-pastel-ink/70 mt-1">{subtitle}</p>
         </div>
         <div className="w-9 h-9 rounded-full bg-pastel-ink text-white grid place-items-center group-hover:scale-110 transition-transform">
@@ -211,16 +211,19 @@ function PastelTile({ to, tone, icon: Icon, title, subtitle }: { to: string; ton
 }
 
 function PastelStat({ tone, icon: Icon, label, value, hint }: { tone: string; icon: any; label: string; value: number | string; hint?: string }) {
+  const numeric = typeof value === "number" ? value : null;
   return (
-    <div className={`${tone} rounded-3xl p-6 shadow-sm flex flex-col gap-6 min-h-[160px]`}>
+    <div className={`${tone} rounded-3xl p-6 hover-lift shadow-elegant flex flex-col gap-6 min-h-[160px]`}>
       <div className="flex items-center justify-between">
-        <div className="w-10 h-10 rounded-full bg-white/60 grid place-items-center">
+        <div className="w-10 h-10 rounded-full bg-white/70 grid place-items-center">
           <Icon className="w-5 h-5 text-pastel-ink" />
         </div>
         <span className="text-xs uppercase tracking-wider text-pastel-ink/60">{label}</span>
       </div>
       <div className="mt-auto">
-        <div className="text-4xl font-bold font-display text-pastel-ink leading-none">{value}</div>
+        <div className="text-5xl font-display text-pastel-ink leading-none">
+          {numeric !== null ? <CountUp value={numeric} /> : value}
+        </div>
         {hint && <div className="text-sm text-pastel-ink/70 mt-2">{hint}</div>}
       </div>
     </div>
