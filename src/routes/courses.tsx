@@ -105,8 +105,8 @@ function Page() {
           contentType: matFile.type || "application/pdf",
         });
         if (upErr) throw upErr;
-        const { data } = supabase.storage.from("course-materials").getPublicUrl(path);
-        file_url = data.publicUrl;
+        // Store the storage path; signed URLs are generated on-demand for private bucket
+        file_url = path;
       }
       const { error } = await supabase.from("course_materials").insert({
         course_id: matCourse.id, title: matTitle, content: matContent || null, file_url, uploaded_by: user!.id,
