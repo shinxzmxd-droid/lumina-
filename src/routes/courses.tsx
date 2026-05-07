@@ -105,8 +105,8 @@ function Page() {
           contentType: matFile.type || "application/pdf",
         });
         if (upErr) throw upErr;
-        const { data } = supabase.storage.from("course-materials").getPublicUrl(path);
-        file_url = data.publicUrl;
+        // Store the storage path; signed URLs are generated on-demand for private bucket
+        file_url = path;
       }
       const { error } = await supabase.from("course_materials").insert({
         course_id: matCourse.id, title: matTitle, content: matContent || null, file_url, uploaded_by: user!.id,
@@ -270,11 +270,12 @@ function FacultyMaterials({ courseId }: { courseId: string }) {
     toast.success("Deleted"); load();
   };
 
-  const fileUrl = (m: any) => {
-    if (!m.file_url) return null;
-    return m.file_url.startsWith("http")
-      ? m.file_url
-      : supabase.storage.from("course-materials").getPublicUrl(m.file_url).data.publicUrl;
+  const openMaterial = async (m: any) => {
+    if (!m.file_url) return;
+    const path = m.file_url.startsWith("http") ? m.file_url.split("/course-materials/")[1] : m.file_url;
+    if (!path) return;
+    const { data } = await supabase.storage.from("course-materials").createSignedUrl(path, 60);
+    if (data?.signedUrl) window.open(data.signedUrl, "_blank", "noopener,noreferrer");
   };
 
   return (
@@ -287,9 +288,7 @@ function FacultyMaterials({ courseId }: { courseId: string }) {
           <DialogHeader><DialogTitle>Course materials</DialogTitle></DialogHeader>
           <div className="space-y-3">
             {items.length === 0 && <p className="text-sm text-muted-foreground">No materials yet.</p>}
-            {items.map(m => {
-              const url = fileUrl(m);
-              return (
+            {items.map(m => (
                 <div key={m.id} className="border rounded-lg p-3 flex flex-col sm:flex-row sm:items-start gap-3">
                   <FileText className="w-5 h-5 text-accent shrink-0 mt-0.5" />
                   <div className="flex-1 min-w-0">
@@ -297,17 +296,16 @@ function FacultyMaterials({ courseId }: { courseId: string }) {
                     {m.content && <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{m.content}</p>}
                   </div>
                   <div className="flex gap-2 flex-wrap">
-                    {url && (
-                      <Button size="sm" variant="outline" asChild>
-                        <a href={url} target="_blank" rel="noopener noreferrer"><Download className="w-3 h-3 mr-1" />Open</a>
+                    {m.file_url && (
+                      <Button size="sm" variant="outline" onClick={() => openMaterial(m)}>
+                        <Download className="w-3 h-3 mr-1" />Open
                       </Button>
                     )}
                     <Button size="sm" variant="outline" onClick={() => startEdit(m)}><Pencil className="w-3 h-3" /></Button>
                     <Button size="sm" variant="destructive" onClick={() => remove(m)}><Trash2 className="w-3 h-3" /></Button>
                   </div>
                 </div>
-              );
-            })}
+              ))}
           </div>
         </DialogContent>
       </Dialog>
