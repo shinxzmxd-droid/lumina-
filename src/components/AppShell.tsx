@@ -50,10 +50,10 @@ function NavList({ items, pathname, onNavigate }: { items: any[]; pathname: stri
             key={it.to}
             to={it.to}
             onClick={onNavigate}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all ${
               active
-                ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-elegant"
-                : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                ? "bg-white/80 backdrop-blur text-pastel-ink shadow-elegant font-medium"
+                : "text-pastel-ink/70 hover:bg-white/50 hover:text-pastel-ink"
             }`}
           >
             <Icon className="w-4 h-4" />
