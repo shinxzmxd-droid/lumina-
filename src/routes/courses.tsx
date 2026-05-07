@@ -270,11 +270,12 @@ function FacultyMaterials({ courseId }: { courseId: string }) {
     toast.success("Deleted"); load();
   };
 
-  const fileUrl = (m: any) => {
-    if (!m.file_url) return null;
-    return m.file_url.startsWith("http")
-      ? m.file_url
-      : supabase.storage.from("course-materials").getPublicUrl(m.file_url).data.publicUrl;
+  const openMaterial = async (m: any) => {
+    if (!m.file_url) return;
+    const path = m.file_url.startsWith("http") ? m.file_url.split("/course-materials/")[1] : m.file_url;
+    if (!path) return;
+    const { data } = await supabase.storage.from("course-materials").createSignedUrl(path, 60);
+    if (data?.signedUrl) window.open(data.signedUrl, "_blank", "noopener,noreferrer");
   };
 
   return (
