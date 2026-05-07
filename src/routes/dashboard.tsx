@@ -9,6 +9,7 @@ import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, PieChart, Pi
 import { Users, BookOpen, ClipboardCheck, Sparkles, FileText, TrendingUp, ArrowUpRight, CalendarDays, Mic, Megaphone, CalendarHeart } from "lucide-react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { HolidaysCalendar } from "@/components/HolidaysCalendar";
+import { CountUp, FloatingBlobs } from "@/components/Pastel";
 
 export const Route = createFileRoute("/dashboard")({
   component: () => <RequireAuth><DashboardRouter /></RequireAuth>,
@@ -80,16 +81,17 @@ function StudentDash() {
   const courseChart = Object.values(byCourse).map(c => ({ name: c.name, attendance: Math.round((c.present/c.total)*100) }));
 
   return (
-    <div className="-m-4 md:-m-6 lg:-m-8 p-6 md:p-10 min-h-[calc(100vh-4rem)] bg-pastel-cream text-pastel-ink">
-      <div className="max-w-7xl mx-auto flex flex-col gap-8">
-        <div className="flex items-start justify-between gap-4">
+    <div className="relative -m-4 md:-m-6 lg:-m-8 p-6 md:p-10 min-h-[calc(100vh-4rem)] bg-pastel-cream text-pastel-ink overflow-hidden">
+      <FloatingBlobs />
+      <div className="relative max-w-7xl mx-auto flex flex-col gap-8">
+        <div className="flex items-start justify-between gap-4 animate-fade-up">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold font-display">Welcome Back 👋</h1>
-            <p className="text-pastel-muted mt-1">Here's your learning snapshot.</p>
+            <h1 className="text-4xl md:text-5xl font-display">Welcome Back</h1>
+            <p className="text-pastel-muted mt-2">Here's your learning snapshot.</p>
           </div>
-          <div className="hidden md:flex items-center gap-3 bg-white rounded-2xl px-5 py-3 shadow-sm">
+          <div className="hidden md:flex items-center gap-3 bg-white/80 backdrop-blur rounded-2xl px-5 py-3 shadow-elegant">
             <div className="text-xs uppercase tracking-wider text-pastel-muted">Attendance</div>
-            <div className="text-2xl font-bold">{pct}%</div>
+            <div className="text-2xl font-display"><CountUp value={pct} suffix="%" /></div>
           </div>
         </div>
 
@@ -190,16 +192,16 @@ function StudentDash() {
 
 function PastelTile({ to, tone, icon: Icon, title, subtitle }: { to: string; tone: string; icon: any; title: string; subtitle: string }) {
   return (
-    <Link to={to} className={`group relative ${tone} rounded-3xl p-6 shadow-sm hover:shadow-lg transition-shadow duration-300 flex flex-col gap-6 min-h-[160px]`}>
+    <Link to={to} className={`group relative ${tone} rounded-3xl p-6 hover-lift shadow-elegant flex flex-col gap-6 min-h-[160px] overflow-hidden`}>
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-full bg-white/60 grid place-items-center">
+        <div className="w-10 h-10 rounded-full bg-white/70 grid place-items-center">
           <Icon className="w-5 h-5 text-pastel-ink" />
         </div>
         <span className="text-xs uppercase tracking-wider text-pastel-ink/60">Open</span>
       </div>
       <div className="mt-auto flex items-end justify-between">
         <div>
-          <h3 className="text-xl font-bold font-display text-pastel-ink">{title}</h3>
+          <h3 className="text-2xl font-display text-pastel-ink">{title}</h3>
           <p className="text-sm text-pastel-ink/70 mt-1">{subtitle}</p>
         </div>
         <div className="w-9 h-9 rounded-full bg-pastel-ink text-white grid place-items-center group-hover:scale-110 transition-transform">
@@ -211,16 +213,19 @@ function PastelTile({ to, tone, icon: Icon, title, subtitle }: { to: string; ton
 }
 
 function PastelStat({ tone, icon: Icon, label, value, hint }: { tone: string; icon: any; label: string; value: number | string; hint?: string }) {
+  const numeric = typeof value === "number" ? value : null;
   return (
-    <div className={`${tone} rounded-3xl p-6 shadow-sm flex flex-col gap-6 min-h-[160px]`}>
+    <div className={`${tone} rounded-3xl p-6 hover-lift shadow-elegant flex flex-col gap-6 min-h-[160px]`}>
       <div className="flex items-center justify-between">
-        <div className="w-10 h-10 rounded-full bg-white/60 grid place-items-center">
+        <div className="w-10 h-10 rounded-full bg-white/70 grid place-items-center">
           <Icon className="w-5 h-5 text-pastel-ink" />
         </div>
         <span className="text-xs uppercase tracking-wider text-pastel-ink/60">{label}</span>
       </div>
       <div className="mt-auto">
-        <div className="text-4xl font-bold font-display text-pastel-ink leading-none">{value}</div>
+        <div className="text-5xl font-display text-pastel-ink leading-none">
+          {numeric !== null ? <CountUp value={numeric} /> : value}
+        </div>
         {hint && <div className="text-sm text-pastel-ink/70 mt-2">{hint}</div>}
       </div>
     </div>
@@ -251,16 +256,17 @@ function FacultyDash() {
   }, [user]);
 
   return (
-    <div className="-m-4 md:-m-6 lg:-m-8 p-6 md:p-10 min-h-[calc(100vh-4rem)] bg-pastel-cream text-pastel-ink">
-      <div className="max-w-7xl mx-auto flex flex-col gap-8">
-        <div className="flex items-start justify-between gap-4">
+    <div className="relative -m-4 md:-m-6 lg:-m-8 p-6 md:p-10 min-h-[calc(100vh-4rem)] bg-pastel-cream text-pastel-ink overflow-hidden">
+      <FloatingBlobs />
+      <div className="relative max-w-7xl mx-auto flex flex-col gap-8">
+        <div className="flex items-start justify-between gap-4 animate-fade-up">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold font-display">Faculty workspace ✨</h1>
-            <p className="text-pastel-muted mt-1">Manage your courses, students and attendance.</p>
+            <h1 className="text-4xl md:text-5xl font-display">Faculty workspace</h1>
+            <p className="text-pastel-muted mt-2">Manage your courses, students and attendance.</p>
           </div>
-          <div className="hidden md:flex items-center gap-3 bg-white rounded-2xl px-5 py-3 shadow-sm">
+          <div className="hidden md:flex items-center gap-3 bg-white/80 backdrop-blur rounded-2xl px-5 py-3 shadow-elegant">
             <div className="text-xs uppercase tracking-wider text-pastel-muted">Students</div>
-            <div className="text-2xl font-bold">{stats.students}</div>
+            <div className="text-2xl font-display"><CountUp value={stats.students} /></div>
           </div>
         </div>
 
@@ -316,16 +322,17 @@ function AdminDash() {
   }, []);
 
   return (
-    <div className="-m-4 md:-m-6 lg:-m-8 p-6 md:p-10 min-h-[calc(100vh-4rem)] bg-pastel-cream text-pastel-ink">
-      <div className="max-w-7xl mx-auto flex flex-col gap-8">
-        <div className="flex items-start justify-between gap-4">
+    <div className="relative -m-4 md:-m-6 lg:-m-8 p-6 md:p-10 min-h-[calc(100vh-4rem)] bg-pastel-cream text-pastel-ink overflow-hidden">
+      <FloatingBlobs />
+      <div className="relative max-w-7xl mx-auto flex flex-col gap-8">
+        <div className="flex items-start justify-between gap-4 animate-fade-up">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold font-display">Campus overview 🎓</h1>
-            <p className="text-pastel-muted mt-1">Real-time institutional metrics.</p>
+            <h1 className="text-4xl md:text-5xl font-display">Campus overview</h1>
+            <p className="text-pastel-muted mt-2">Real-time institutional metrics.</p>
           </div>
-          <div className="hidden md:flex items-center gap-3 bg-white rounded-2xl px-5 py-3 shadow-sm">
+          <div className="hidden md:flex items-center gap-3 bg-white/80 backdrop-blur rounded-2xl px-5 py-3 shadow-elegant">
             <div className="text-xs uppercase tracking-wider text-pastel-muted">Users</div>
-            <div className="text-2xl font-bold">{counts.users}</div>
+            <div className="text-2xl font-display"><CountUp value={counts.users} /></div>
           </div>
         </div>
 

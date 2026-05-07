@@ -50,10 +50,10 @@ function NavList({ items, pathname, onNavigate }: { items: any[]; pathname: stri
             key={it.to}
             to={it.to}
             onClick={onNavigate}
-            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all ${
               active
-                ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-elegant"
-                : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                ? "bg-white/80 backdrop-blur text-pastel-ink shadow-elegant font-medium"
+                : "text-pastel-ink/70 hover:bg-white/50 hover:text-pastel-ink"
             }`}
           >
             <Icon className="w-4 h-4" />
@@ -67,25 +67,29 @@ function NavList({ items, pathname, onNavigate }: { items: any[]; pathname: stri
 
 function SidebarInner({ items, pathname, user, role, onSignOut, onNavigate }: any) {
   return (
-    <div className="flex flex-col h-full p-4 bg-sidebar text-sidebar-foreground">
-      <Link to="/dashboard" onClick={onNavigate} className="flex items-center gap-2 px-2 py-3 mb-6">
-        <div className="w-9 h-9 rounded-lg bg-gradient-primary grid place-items-center shadow-glow">
-          <GraduationCap className="w-5 h-5 text-primary-foreground" />
+    <div className="relative flex flex-col h-full p-4 bg-gradient-sidebar text-pastel-ink overflow-hidden">
+      <div className="blob blob-lavender w-48 h-48 -top-10 -left-10 opacity-40" aria-hidden />
+      <div className="blob blob-pink w-40 h-40 bottom-20 -right-10 opacity-30 animate-blob-slow" aria-hidden />
+      <Link to="/dashboard" onClick={onNavigate} className="relative flex items-center gap-2 px-2 py-3 mb-6">
+        <div className="w-10 h-10 rounded-2xl bg-white/70 backdrop-blur grid place-items-center shadow-elegant">
+          <GraduationCap className="w-5 h-5 text-pastel-lavender-strong" />
         </div>
         <div>
-          <div className="font-display font-bold text-lg leading-none">Lumina</div>
+          <div className="font-display text-2xl leading-none">Lumina</div>
         </div>
       </Link>
-      <NavList items={items} pathname={pathname} onNavigate={onNavigate} />
-      <div className="border-t border-sidebar-border pt-4 mt-4">
+      <div className="relative flex-1 overflow-y-auto">
+        <NavList items={items} pathname={pathname} onNavigate={onNavigate} />
+      </div>
+      <div className="relative border-t border-white/40 pt-4 mt-4">
         <div className="px-2 pb-3">
           <div className="text-sm font-medium truncate">{user?.email}</div>
-          <div className="text-xs text-sidebar-foreground/60 capitalize">{role}</div>
+          <div className="text-xs text-pastel-muted capitalize">{role}</div>
         </div>
         <Button
           variant="ghost"
           size="sm"
-          className="w-full justify-start text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent/50"
+          className="w-full justify-start text-pastel-ink hover:bg-white/50"
           onClick={onSignOut}
         >
           <LogOut className="w-4 h-4 mr-2" /> Sign out
@@ -113,20 +117,20 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <main className="flex-1 overflow-x-hidden min-w-0">
         {/* Mobile top bar */}
-        <header className="md:hidden sticky top-0 z-40 flex items-center justify-between px-4 h-14 bg-sidebar text-sidebar-foreground border-b border-sidebar-border">
+        <header className="md:hidden sticky top-0 z-40 flex items-center justify-between px-4 h-14 bg-gradient-sidebar text-pastel-ink border-b border-white/40">
           <Link to="/dashboard" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-primary grid place-items-center">
-              <GraduationCap className="w-4 h-4 text-primary-foreground" />
+            <div className="w-8 h-8 rounded-xl bg-white/70 grid place-items-center">
+              <GraduationCap className="w-4 h-4 text-pastel-lavender-strong" />
             </div>
-            <span className="font-display font-bold">Lumina</span>
+            <span className="font-display text-xl">Lumina</span>
           </Link>
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-sidebar-foreground">
+              <Button variant="ghost" size="icon" className="text-pastel-ink">
                 <Menu className="w-5 h-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="p-0 w-72 bg-sidebar border-sidebar-border">
+            <SheetContent side="left" className="p-0 w-72 border-0">
               <SidebarInner items={items} pathname={loc.pathname} user={user} role={role} onSignOut={handleSignOut} onNavigate={() => setOpen(false)} />
             </SheetContent>
           </Sheet>

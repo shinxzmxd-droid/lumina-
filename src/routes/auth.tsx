@@ -71,20 +71,23 @@ function AuthPage() {
 
   return (
     <div className="min-h-screen grid md:grid-cols-2 bg-background">
-      <div className="hidden md:flex flex-col justify-between p-10 bg-gradient-hero text-primary-foreground">
-        <div className="flex items-center gap-2">
-          <div className="w-9 h-9 rounded-lg bg-gradient-primary grid place-items-center shadow-glow">
-            <GraduationCap className="w-5 h-5" />
+      <div className="relative hidden md:flex flex-col justify-between p-10 bg-gradient-hero text-pastel-ink overflow-hidden">
+        <div className="blob blob-lavender w-96 h-96 -top-20 -left-20" aria-hidden />
+        <div className="blob blob-pink w-80 h-80 bottom-10 right-0 animate-blob-slow" style={{ animationDelay: "-5s" }} aria-hidden />
+        <div className="blob blob-mint w-64 h-64 top-1/2 left-1/3" style={{ animationDelay: "-9s" }} aria-hidden />
+        <div className="relative flex items-center gap-2">
+          <div className="w-10 h-10 rounded-2xl bg-white/70 backdrop-blur grid place-items-center shadow-elegant">
+            <GraduationCap className="w-5 h-5 text-pastel-lavender-strong" />
           </div>
-          <span className="font-display font-bold text-xl">Lumina</span>
+          <span className="font-display text-2xl">Lumina</span>
         </div>
-        <div>
-          <h2 className="font-display text-4xl font-bold mb-3">Your campus, unified.</h2>
-          <p className="text-primary-foreground/70 max-w-md">
+        <div className="relative animate-fade-up">
+          <h2 className="font-display text-5xl mb-3 leading-tight">Your campus,<br/>unified.</h2>
+          <p className="text-pastel-muted max-w-md">
             "Your campus, powered by an AI that understands your learning."
           </p>
         </div>
-        <div className="text-xs text-primary-foreground/50">© Lumina · MVP</div>
+        <div className="relative text-xs text-pastel-muted">© Lumina</div>
       </div>
 
       <div className="grid place-items-center p-6">
