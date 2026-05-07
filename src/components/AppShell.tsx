@@ -117,20 +117,20 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <main className="flex-1 overflow-x-hidden min-w-0">
         {/* Mobile top bar */}
-        <header className="md:hidden sticky top-0 z-40 flex items-center justify-between px-4 h-14 bg-sidebar text-sidebar-foreground border-b border-sidebar-border">
+        <header className="md:hidden sticky top-0 z-40 flex items-center justify-between px-4 h-14 bg-gradient-sidebar text-pastel-ink border-b border-white/40">
           <Link to="/dashboard" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-primary grid place-items-center">
-              <GraduationCap className="w-4 h-4 text-primary-foreground" />
+            <div className="w-8 h-8 rounded-xl bg-white/70 grid place-items-center">
+              <GraduationCap className="w-4 h-4 text-pastel-lavender-strong" />
             </div>
-            <span className="font-display font-bold">Lumina</span>
+            <span className="font-display text-xl">Lumina</span>
           </Link>
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-sidebar-foreground">
+              <Button variant="ghost" size="icon" className="text-pastel-ink">
                 <Menu className="w-5 h-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="p-0 w-72 bg-sidebar border-sidebar-border">
+            <SheetContent side="left" className="p-0 w-72 border-0">
               <SidebarInner items={items} pathname={loc.pathname} user={user} role={role} onSignOut={handleSignOut} onNavigate={() => setOpen(false)} />
             </SheetContent>
           </Sheet>
