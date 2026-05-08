@@ -47,7 +47,7 @@ function AuthPage() {
   };
 
   const signUp = async () => {
-    if (role === "student" && !assignedFaculty) {
+    if (!assignedFaculty) {
       return toast.error("Please pick the faculty who will approve your account");
     }
     setBusy(true);
@@ -58,15 +58,13 @@ function AuthPage() {
         emailRedirectTo: `${window.location.origin}/dashboard`,
         data: {
           full_name: name,
-          role,
-          ...(role === "student" ? { assigned_faculty_id: assignedFaculty } : {}),
+          assigned_faculty_id: assignedFaculty,
         },
       },
     });
     setBusy(false);
     if (error) return toast.error(error.message);
-    const who = role === "student" ? "your assigned faculty" : "an admin";
-    toast.success(`Account created — pending approval by ${who}. You can sign in once approved.`);
+    toast.success("Account created — pending approval by your assigned faculty. You can sign in once approved.");
   };
 
   return (
