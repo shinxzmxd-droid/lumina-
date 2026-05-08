@@ -7,7 +7,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, CheckCircle2, Sparkles, Loader2 } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
+import { AlertTriangle, CheckCircle2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/attendance")({
@@ -19,8 +20,8 @@ const MIN_PCT = 75;
 function Page() {
   const { user } = useAuth();
   const [rows, setRows] = useState<any[]>([]);
-  const [predicting, setPredicting] = useState(false);
-  const [prediction, setPrediction] = useState<any | null>(null);
+  const [plan, setPlan] = useState<Record<string, number>>({}); // course_id -> % attend (0-100)
+  const [upcomingBySubject, setUpcomingBySubject] = useState<Record<string, number>>({});
 
   useEffect(() => {
     if (!user) return;
@@ -32,59 +33,70 @@ function Page() {
   }, [user]);
 
   const bySubject = useMemo(() => {
-    const map: Record<string, { code: string; name: string; total: number; present: number }> = {};
+    const map: Record<string, { id: string; code: string; name: string; total: number; present: number }> = {};
     rows.forEach((r) => {
       const k = r.course_id;
-      if (!map[k]) map[k] = { code: r.courses?.code ?? "?", name: r.courses?.name ?? "", total: 0, present: 0 };
+      if (!map[k]) map[k] = { id: k, code: r.courses?.code ?? "?", name: r.courses?.name ?? "", total: 0, present: 0 };
       map[k].total++;
       if (r.present) map[k].present++;
     });
     return Object.values(map).map((s) => ({ ...s, pct: s.total ? Math.round((s.present / s.total) * 100) : 0 }));
   }, [rows]);
 
+  // Initialize plan default to 100% per subject
+  useEffect(() => {
+    setPlan((prev) => {
+      const next = { ...prev };
+      bySubject.forEach((s) => { if (next[s.id] === undefined) next[s.id] = 100; });
+      return next;
+    });
+  }, [bySubject]);
+
+  // Fetch upcoming class counts for next 2 weeks
+  useEffect(() => {
+    if (!user || bySubject.length === 0) return;
+    const courseIds = bySubject.map((s) => s.id);
+    supabase.from("timetable_slots")
+      .select("day_of_week, course_id")
+      .in("course_id", courseIds)
+      .then(({ data }) => {
+        const today = new Date(); today.setHours(0, 0, 0, 0);
+        const counts: Record<string, number> = {};
+        for (let i = 1; i <= 14; i++) {
+          const d = new Date(today); d.setDate(today.getDate() + i);
+          const dow = d.getDay();
+          (data ?? []).filter((s: any) => Number(s.day_of_week) === dow).forEach((s: any) => {
+            counts[s.course_id] = (counts[s.course_id] ?? 0) + 1;
+          });
+        }
+        setUpcomingBySubject(counts);
+      });
+  }, [user, bySubject.length]);
+
   const overallTotal = rows.length;
   const overallPresent = rows.filter(r => r.present).length;
   const overallPct = overallTotal ? Math.round((overallPresent / overallTotal) * 100) : 0;
 
-  const runPrediction = async () => {
-    if (!user) return;
-    if (bySubject.length === 0) {
-      toast.error("No attendance data yet to predict from");
-      return;
-    }
-    setPredicting(true);
-    try {
-      const courseIds = Array.from(new Set(rows.map(r => r.course_id)));
-      const { data: slotsRaw } = await supabase
-        .from("timetable_slots")
-        .select("day_of_week, start_time, end_time, room, course_id, courses(code)")
-        .in("course_id", courseIds);
-      const slots = (slotsRaw ?? []).map((s: any) => ({
-        day_of_week: s.day_of_week,
-        start_time: s.start_time,
-        end_time: s.end_time,
-        room: s.room,
-        code: s.courses?.code ?? "?",
-      }));
-      if (slots.length === 0) {
-        toast.error("No timetable found for your courses");
-        setPredicting(false);
-        return;
-      }
-      const subjects = bySubject.map(s => ({ code: s.code, name: s.name, total: s.total, present: s.present, current_pct: s.pct }));
-      const { data, error } = await supabase.functions.invoke("predict-attendance", {
-        body: { subjects, slots, weeksAhead: 2, assumeAllAttended: true },
-      });
-      if (error) throw error;
-      if ((data as any)?.error) throw new Error((data as any).error);
-      setPrediction((data as any).prediction);
-      toast.success("Forecast ready: assuming you attend every class");
-    } catch (e: any) {
-      toast.error(e.message ?? "Prediction failed");
-    } finally {
-      setPredicting(false);
-    }
-  };
+  const projection = useMemo(() => {
+    let projPresent = overallPresent;
+    let projTotal = overallTotal;
+    const perSubject = bySubject.map((s) => {
+      const upcoming = upcomingBySubject[s.id] ?? 0;
+      const willAttend = Math.round((upcoming * (plan[s.id] ?? 100)) / 100);
+      const newPresent = s.present + willAttend;
+      const newTotal = s.total + upcoming;
+      projPresent += willAttend;
+      projTotal += upcoming;
+      return {
+        ...s,
+        upcoming,
+        willAttend,
+        projPct: newTotal ? Math.round((newPresent / newTotal) * 100) : 0,
+      };
+    });
+    const projOverall = projTotal ? Math.round((projPresent / projTotal) * 100) : 0;
+    return { perSubject, projOverall };
+  }, [bySubject, plan, upcomingBySubject, overallPresent, overallTotal]);
 
   return (
     <div className="space-y-6">
@@ -108,80 +120,77 @@ function Page() {
       </Card>
 
       <Card className="p-6 bg-gradient-to-br from-primary/5 to-accent/5 border-primary/20">
-        <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div className="flex gap-3">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-              <Sparkles className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <h3 className="font-display font-semibold">"What if I attend every class?" Predictor</h3>
-              <p className="text-sm text-muted-foreground">See your projected attendance % if you attend every scheduled class for the next 2 weeks.</p>
-            </div>
+        <div className="flex items-start gap-3 mb-4">
+          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+            <Sparkles className="w-5 h-5 text-primary" />
           </div>
-          <Button onClick={runPrediction} disabled={predicting}>
-            {predicting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Calculating…</> : <><Sparkles className="w-4 h-4 mr-2" /> Project next 2 weeks</>}
-          </Button>
+          <div>
+            <h3 className="font-display font-semibold">Attendance Predictor</h3>
+            <p className="text-sm text-muted-foreground">Choose how many classes you plan to attend per subject for the next 2 weeks. Your projected attendance updates live.</p>
+          </div>
         </div>
 
-        {prediction && (
-          <div className="mt-5 space-y-4">
-            <div className="flex items-end gap-6 flex-wrap">
+        {bySubject.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No attendance records yet to predict from.</p>
+        ) : (
+          <div className="space-y-4">
+            <div className="flex items-end gap-6 flex-wrap p-4 rounded-xl bg-background/60">
               <div>
-                <div className="text-xs uppercase tracking-wider text-muted-foreground">Current overall</div>
+                <div className="text-xs uppercase tracking-wider text-muted-foreground">Current</div>
                 <div className="text-2xl font-bold font-display text-muted-foreground">{overallPct}%</div>
               </div>
               <div className="text-2xl text-muted-foreground">→</div>
               <div>
                 <div className="text-xs uppercase tracking-wider text-muted-foreground">Projected overall</div>
-                <div className="text-4xl font-bold font-display text-success">{prediction.overall_predicted_pct}%</div>
+                <div className={`text-4xl font-bold font-display ${projection.projOverall >= MIN_PCT ? "text-success" : "text-destructive"}`}>
+                  {projection.projOverall}%
+                </div>
               </div>
-              <Badge variant={prediction.risk_level === "high" ? "destructive" : "secondary"} className={prediction.risk_level === "low" ? "bg-success text-success-foreground" : ""}>
-                {prediction.risk_level} risk
-              </Badge>
             </div>
-            <p className="text-sm">{prediction.summary}</p>
 
-            {prediction.per_subject && (
-              <div className="grid sm:grid-cols-2 gap-3">
-                {prediction.per_subject.map((s: any) => (
-                  <div key={s.code} className="rounded-lg bg-background border p-3">
-                    <div className="flex items-center justify-between">
+            <div className="grid sm:grid-cols-2 gap-3">
+              {projection.perSubject.map((s) => (
+                <div key={s.id} className="rounded-lg bg-background border p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
                       <div className="font-display font-semibold text-sm">{s.code}</div>
-                      <div className="text-xs text-muted-foreground">+{s.upcoming_classes} classes</div>
+                      <div className="text-xs text-muted-foreground">{s.upcoming} upcoming classes</div>
                     </div>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-sm text-muted-foreground">{s.current_pct}%</span>
-                      <span className="text-muted-foreground">→</span>
-                      <span className={`text-lg font-bold font-display ${s.projected_pct >= 75 ? "text-success" : "text-destructive"}`}>{s.projected_pct}%</span>
+                    <div className={`text-xl font-bold font-display ${s.projPct >= MIN_PCT ? "text-success" : "text-destructive"}`}>
+                      {s.projPct}%
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
-
-            <div className="space-y-3">
-              <div className="text-xs uppercase tracking-wider text-muted-foreground">Upcoming classes you'd attend</div>
-              {Object.entries(
-                (prediction.classes ?? []).reduce((acc: Record<string, any[]>, c: any) => {
-                  (acc[c.date] ||= []).push(c); return acc;
-                }, {})
-              ).map(([date, items]) => (
-                <div key={date} className="rounded-lg bg-background border overflow-hidden">
-                  <div className="px-3 py-2 bg-muted/50 text-xs font-semibold flex justify-between">
-                    <span>{(items as any[])[0].day}</span>
-                    <span className="text-muted-foreground">{date}</span>
-                  </div>
-                  <div className="divide-y">
-                    {(items as any[]).map((c, i) => (
-                      <div key={i} className="px-3 py-2 flex items-center gap-3 text-sm">
-                        <div className="text-xs text-muted-foreground w-24 shrink-0">{c.start?.slice(0,5)}–{c.end?.slice(0,5)}</div>
-                        <div className="font-display font-semibold w-20 shrink-0">{c.code}</div>
-                        <Badge className="ml-auto bg-success text-success-foreground">present</Badge>
-                      </div>
-                    ))}
+                  <div>
+                    <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                      <span>Plan to attend</span>
+                      <span><strong>{s.willAttend}/{s.upcoming}</strong> ({plan[s.id] ?? 100}%)</span>
+                    </div>
+                    <Slider
+                      value={[plan[s.id] ?? 100]}
+                      min={0}
+                      max={100}
+                      step={5}
+                      onValueChange={(v) => setPlan((p) => ({ ...p, [s.id]: v[0] }))}
+                      disabled={s.upcoming === 0}
+                    />
                   </div>
                 </div>
               ))}
+            </div>
+
+            <div className="flex gap-2 flex-wrap">
+              <Button size="sm" variant="outline" onClick={() => {
+                const all: Record<string, number> = {}; bySubject.forEach(s => all[s.id] = 100);
+                setPlan(all); toast.success("Set all to 100%");
+              }}>Attend all</Button>
+              <Button size="sm" variant="outline" onClick={() => {
+                const all: Record<string, number> = {}; bySubject.forEach(s => all[s.id] = 75);
+                setPlan(all);
+              }}>75% each</Button>
+              <Button size="sm" variant="outline" onClick={() => {
+                const all: Record<string, number> = {}; bySubject.forEach(s => all[s.id] = 50);
+                setPlan(all);
+              }}>50% each</Button>
             </div>
           </div>
         )}
