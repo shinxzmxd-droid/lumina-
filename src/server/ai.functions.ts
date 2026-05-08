@@ -44,6 +44,7 @@ function isBlocked(q: string): { blocked: boolean; reason?: string } {
 }
 
 export const askTutor = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((d) =>
     z.object({
       question: z.string().min(1).max(2000),
