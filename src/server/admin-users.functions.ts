@@ -95,15 +95,21 @@ export const adminSeedFaculty = createServerFn({ method: "POST" })
       if (seen.has(email)) { skipped.push({ name, reason: "duplicate" }); continue; }
       seen.add(email);
 
-      const { error } = await supabaseAdmin.auth.admin.createUser({
+      const { data: createdUser, error } = await supabaseAdmin.auth.admin.createUser({
         email,
         password: data.password,
         email_confirm: true,
-        user_metadata: { full_name: name, role: "faculty", created_by_admin: true },
+        user_metadata: { full_name: name },
       });
       if (error) {
         skipped.push({ name, reason: error.message });
       } else {
+        const uid = createdUser.user?.id;
+        if (uid) {
+          await supabaseAdmin.from("user_roles").delete().eq("user_id", uid);
+          await supabaseAdmin.from("user_roles").insert({ user_id: uid, role: "faculty" });
+          await supabaseAdmin.from("profiles").update({ approved: true }).eq("user_id", uid);
+        }
         created.push({ name, email });
       }
     }
