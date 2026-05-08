@@ -26,7 +26,6 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [role, setRole] = useState<"student" | "faculty" | "admin">("student");
   const [assignedFaculty, setAssignedFaculty] = useState<string>("");
   const [facultyList, setFacultyList] = useState<{ user_id: string; full_name: string }[]>([]);
   const [busy, setBusy] = useState(false);
