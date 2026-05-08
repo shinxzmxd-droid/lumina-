@@ -16,7 +16,7 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
-function AuthPage() {
+export function AuthPage() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   useEffect(() => {
