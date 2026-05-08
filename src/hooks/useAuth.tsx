@@ -24,28 +24,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const fetchRoleAndApproval = async (uid: string) => {
-    const [{ data: r }, { data: p }] = await Promise.all([
-      supabase.from("user_roles").select("role").eq("user_id", uid).order("role").limit(1).maybeSingle(),
-      supabase.from("profiles").select("approved").eq("user_id", uid).maybeSingle(),
-    ]);
-    setRole((r?.role as AppRole) ?? null);
-    setApproved(!!p?.approved);
+    try {
+      const [{ data: r }, { data: p }] = await Promise.all([
+        supabase.from("user_roles").select("role").eq("user_id", uid).order("role").limit(1).maybeSingle(),
+        supabase.from("profiles").select("approved").eq("user_id", uid).maybeSingle(),
+      ]);
+      setRole((r?.role as AppRole) ?? "student");
+      setApproved(!!p?.approved);
+    } catch (e) {
+      console.error("fetchRoleAndApproval failed", e);
+      setRole("student");
+      setApproved(false);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
       setSession(s);
       if (s?.user) {
+        setLoading(true);
         setTimeout(() => fetchRoleAndApproval(s.user.id), 0);
       } else {
         setRole(null);
         setApproved(false);
+        setLoading(false);
       }
     });
     supabase.auth.getSession().then(async ({ data }) => {
       setSession(data.session);
       if (data.session?.user) await fetchRoleAndApproval(data.session.user.id);
-      setLoading(false);
+      else setLoading(false);
     });
     return () => sub.subscription.unsubscribe();
   }, []);
