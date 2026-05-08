@@ -35,6 +35,7 @@ const navByRole: Record<AppRole, { to: string; label: string; icon: any }[]> = {
     { to: "/admin/leaves", label: "Faculty Leaves", icon: FileText },
     { to: "/admin/timetable", label: "Timetable Generator", icon: Sparkles },
     { to: "/admin/courses", label: "Courses", icon: BookOpen },
+    { to: "/admin/domains", label: "Email Domains", icon: FileText },
     { to: "/announcements", label: "Announcements", icon: Megaphone },
   ],
 };
