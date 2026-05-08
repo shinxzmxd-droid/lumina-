@@ -7,7 +7,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, CheckCircle2, Sparkles, Loader2 } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
+import { AlertTriangle, CheckCircle2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/attendance")({
