@@ -112,26 +112,15 @@ function AuthPage() {
               <div><Label>Email</Label><Input type="email" value={email} onChange={(e)=>setEmail(e.target.value)} /></div>
               <div><Label>Password</Label><Input type="password" value={password} onChange={(e)=>setPassword(e.target.value)} /></div>
               <div>
-                <Label className="mb-2 block">I am a</Label>
-                <RadioGroup value={role} onValueChange={(v)=>setRole(v as any)} className="grid grid-cols-3 gap-2">
-                  {(["student","faculty","admin"] as const).map(r=>(
-                    <Label key={r} className={`border rounded-lg p-2 text-center cursor-pointer capitalize text-sm ${role===r?"border-primary bg-primary/5":""}`}>
-                      <RadioGroupItem value={r} className="sr-only" />{r}
-                    </Label>
-                  ))}
-                </RadioGroup>
+                <Label className="mb-2 block">Assigned faculty (will approve you)</Label>
+                <Select value={assignedFaculty} onValueChange={setAssignedFaculty}>
+                  <SelectTrigger><SelectValue placeholder={facultyList.length ? "Pick a faculty" : "No faculty available yet"} /></SelectTrigger>
+                  <SelectContent>
+                    {facultyList.map(f => <SelectItem key={f.user_id} value={f.user_id}>{f.full_name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground mt-2">Faculty and admin accounts can only be created by an existing admin.</p>
               </div>
-              {role === "student" && (
-                <div>
-                  <Label className="mb-2 block">Assigned faculty (will approve you)</Label>
-                  <Select value={assignedFaculty} onValueChange={setAssignedFaculty}>
-                    <SelectTrigger><SelectValue placeholder={facultyList.length ? "Pick a faculty" : "No faculty available yet"} /></SelectTrigger>
-                    <SelectContent>
-                      {facultyList.map(f => <SelectItem key={f.user_id} value={f.user_id}>{f.full_name}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
               <Button className="w-full bg-gradient-primary shadow-glow" disabled={busy} onClick={signUp}>
                 {busy ? "…" : "Create account"}
               </Button>
