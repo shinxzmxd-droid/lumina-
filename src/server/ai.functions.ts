@@ -78,6 +78,7 @@ ${data.context.slice(0, 8000) || "(no material uploaded — answer from general 
   });
 
 export const generateTimetable = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((d) =>
     z.object({
       faculty: z.array(z.object({
