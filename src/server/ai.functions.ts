@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 const AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 const MODEL = "google/gemini-2.5-flash";
 
@@ -44,6 +44,7 @@ function isBlocked(q: string): { blocked: boolean; reason?: string } {
 }
 
 export const askTutor = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((d) =>
     z.object({
       question: z.string().min(1).max(2000),
@@ -77,6 +78,7 @@ ${data.context.slice(0, 8000) || "(no material uploaded — answer from general 
   });
 
 export const generateTimetable = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((d) =>
     z.object({
       faculty: z.array(z.object({

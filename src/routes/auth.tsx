@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { GraduationCap } from "lucide-react";
 import { toast } from "sonner";
@@ -27,7 +26,6 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [role, setRole] = useState<"student" | "faculty" | "admin">("student");
   const [assignedFaculty, setAssignedFaculty] = useState<string>("");
   const [facultyList, setFacultyList] = useState<{ user_id: string; full_name: string }[]>([]);
   const [busy, setBusy] = useState(false);
@@ -47,7 +45,7 @@ function AuthPage() {
   };
 
   const signUp = async () => {
-    if (role === "student" && !assignedFaculty) {
+    if (!assignedFaculty) {
       return toast.error("Please pick the faculty who will approve your account");
     }
     setBusy(true);
@@ -58,15 +56,13 @@ function AuthPage() {
         emailRedirectTo: `${window.location.origin}/dashboard`,
         data: {
           full_name: name,
-          role,
-          ...(role === "student" ? { assigned_faculty_id: assignedFaculty } : {}),
+          assigned_faculty_id: assignedFaculty,
         },
       },
     });
     setBusy(false);
     if (error) return toast.error(error.message);
-    const who = role === "student" ? "your assigned faculty" : "an admin";
-    toast.success(`Account created — pending approval by ${who}. You can sign in once approved.`);
+    toast.success("Account created — pending approval by your assigned faculty. You can sign in once approved.");
   };
 
   return (
@@ -114,26 +110,15 @@ function AuthPage() {
               <div><Label>Email</Label><Input type="email" value={email} onChange={(e)=>setEmail(e.target.value)} /></div>
               <div><Label>Password</Label><Input type="password" value={password} onChange={(e)=>setPassword(e.target.value)} /></div>
               <div>
-                <Label className="mb-2 block">I am a</Label>
-                <RadioGroup value={role} onValueChange={(v)=>setRole(v as any)} className="grid grid-cols-3 gap-2">
-                  {(["student","faculty","admin"] as const).map(r=>(
-                    <Label key={r} className={`border rounded-lg p-2 text-center cursor-pointer capitalize text-sm ${role===r?"border-primary bg-primary/5":""}`}>
-                      <RadioGroupItem value={r} className="sr-only" />{r}
-                    </Label>
-                  ))}
-                </RadioGroup>
+                <Label className="mb-2 block">Assigned faculty (will approve you)</Label>
+                <Select value={assignedFaculty} onValueChange={setAssignedFaculty}>
+                  <SelectTrigger><SelectValue placeholder={facultyList.length ? "Pick a faculty" : "No faculty available yet"} /></SelectTrigger>
+                  <SelectContent>
+                    {facultyList.map(f => <SelectItem key={f.user_id} value={f.user_id}>{f.full_name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground mt-2">Faculty and admin accounts can only be created by an existing admin.</p>
               </div>
-              {role === "student" && (
-                <div>
-                  <Label className="mb-2 block">Assigned faculty (will approve you)</Label>
-                  <Select value={assignedFaculty} onValueChange={setAssignedFaculty}>
-                    <SelectTrigger><SelectValue placeholder={facultyList.length ? "Pick a faculty" : "No faculty available yet"} /></SelectTrigger>
-                    <SelectContent>
-                      {facultyList.map(f => <SelectItem key={f.user_id} value={f.user_id}>{f.full_name}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
               <Button className="w-full bg-gradient-primary shadow-glow" disabled={busy} onClick={signUp}>
                 {busy ? "…" : "Create account"}
               </Button>

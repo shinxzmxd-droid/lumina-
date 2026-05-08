@@ -24,14 +24,20 @@ export const adminCreateUser = createServerFn({ method: "POST" })
       email: data.email,
       password: data.password,
       email_confirm: true,
-      user_metadata: {
-        full_name: data.fullName,
-        role: data.role,
-        created_by_admin: true,
-      },
+      user_metadata: { full_name: data.fullName },
     });
     if (error) throw new Error(error.message);
-    return { ok: true, userId: created.user?.id };
+    const newUserId = created.user?.id;
+    if (newUserId) {
+      // Trigger creates a default student row + unapproved profile.
+      // Server-side: set the requested role and mark approved (admin-created).
+      if (data.role !== "student") {
+        await supabaseAdmin.from("user_roles").delete().eq("user_id", newUserId);
+        await supabaseAdmin.from("user_roles").insert({ user_id: newUserId, role: data.role });
+      }
+      await supabaseAdmin.from("profiles").update({ approved: true }).eq("user_id", newUserId);
+    }
+    return { ok: true, userId: newUserId };
   });
 
 export const adminSetApproval = createServerFn({ method: "POST" })
@@ -89,15 +95,21 @@ export const adminSeedFaculty = createServerFn({ method: "POST" })
       if (seen.has(email)) { skipped.push({ name, reason: "duplicate" }); continue; }
       seen.add(email);
 
-      const { error } = await supabaseAdmin.auth.admin.createUser({
+      const { data: createdUser, error } = await supabaseAdmin.auth.admin.createUser({
         email,
         password: data.password,
         email_confirm: true,
-        user_metadata: { full_name: name, role: "faculty", created_by_admin: true },
+        user_metadata: { full_name: name },
       });
       if (error) {
         skipped.push({ name, reason: error.message });
       } else {
+        const uid = createdUser.user?.id;
+        if (uid) {
+          await supabaseAdmin.from("user_roles").delete().eq("user_id", uid);
+          await supabaseAdmin.from("user_roles").insert({ user_id: uid, role: "faculty" });
+          await supabaseAdmin.from("profiles").update({ approved: true }).eq("user_id", uid);
+        }
         created.push({ name, email });
       }
     }
