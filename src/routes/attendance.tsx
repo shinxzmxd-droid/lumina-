@@ -21,7 +21,7 @@ function Page() {
   const { user } = useAuth();
   const [rows, setRows] = useState<any[]>([]);
   
-  const [upcomingBySubject, setUpcomingBySubject] = useState<Record<string, number>>({});
+  
   // Per-class toggles: key = `${course_id}|${YYYY-MM-DD}` -> boolean (will attend)
   const [dayPlan, setDayPlan] = useState<Record<string, boolean>>({});
   const [upcomingClasses, setUpcomingClasses] = useState<Array<{ key: string; course_id: string; date: string; dow: number }>>([]);
