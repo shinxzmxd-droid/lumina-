@@ -20,7 +20,7 @@ const MIN_PCT = 75;
 function Page() {
   const { user } = useAuth();
   const [rows, setRows] = useState<any[]>([]);
-  const [plan, setPlan] = useState<Record<string, number>>({}); // course_id -> % attend
+  
   const [upcomingBySubject, setUpcomingBySubject] = useState<Record<string, number>>({});
   // Per-class toggles: key = `${course_id}|${YYYY-MM-DD}` -> boolean (will attend)
   const [dayPlan, setDayPlan] = useState<Record<string, boolean>>({});
