@@ -138,7 +138,7 @@ function Page() {
           </div>
           <div>
             <h3 className="font-display font-semibold">Attendance Predictor</h3>
-            <p className="text-sm text-muted-foreground">Choose how many classes you plan to attend per subject for the next 2 weeks. Your projected attendance updates live.</p>
+            <p className="text-sm text-muted-foreground">Toggle the days you plan to attend per subject for the next 2 weeks. Your projected attendance updates live.</p>
           </div>
         </div>
 
