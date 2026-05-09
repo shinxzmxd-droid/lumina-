@@ -9,8 +9,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, XCircle, Upload, Download } from "lucide-react";
+import { CheckCircle2, XCircle, Upload, Download, CalendarIcon } from "lucide-react";
 import { toast } from "sonner";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/mark-attendance")({
   component: () => <RequireAuth roles={["faculty","admin"]}><Page /></RequireAuth>,
@@ -22,7 +26,8 @@ function Page() {
   const [courseId, setCourseId] = useState<string>("");
   const [students, setStudents] = useState<any[]>([]);
   const [present, setPresent] = useState<Record<string, boolean>>({});
-  const [date] = useState(new Date().toISOString().slice(0,10));
+  const [sessionDate, setSessionDate] = useState<Date>(new Date());
+  const date = sessionDate.toISOString().slice(0, 10);
 
   useEffect(() => {
     supabase.from("courses").select("*").eq("faculty_id", user!.id).then(({data}) => setCourses(data ?? []));
@@ -31,18 +36,25 @@ function Page() {
   useEffect(() => {
     if (!courseId) return;
     (async () => {
-      // Pull all students assigned to this faculty ("My Students")
       const { data: profs } = await supabase
         .from("profiles")
         .select("user_id, full_name, approved, assigned_faculty_id")
         .eq("assigned_faculty_id", user!.id);
       const list = (profs ?? []).sort((a, b) => (a.full_name || "").localeCompare(b.full_name || ""));
       setStudents(list);
+      // Load existing attendance for selected date
+      const { data: existing } = await supabase
+        .from("attendance")
+        .select("student_id, present")
+        .eq("course_id", courseId)
+        .eq("session_date", date);
+      const existingMap: Record<string, boolean> = {};
+      (existing ?? []).forEach((r: any) => { existingMap[r.student_id] = r.present; });
       const init: Record<string, boolean> = {};
-      list.forEach((s: any) => { init[s.user_id] = true; });
+      list.forEach((s: any) => { init[s.user_id] = existingMap[s.user_id] ?? true; });
       setPresent(init);
     })();
-  }, [courseId]);
+  }, [courseId, date]);
 
   const save = async () => {
     if (!courseId) return;
@@ -97,7 +109,24 @@ function Page() {
             </SelectContent>
           </Select>
         </div>
-        <div className="text-sm text-muted-foreground">Session date: {date}</div>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className={cn("justify-start text-left font-normal", !sessionDate && "text-muted-foreground")}>
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {sessionDate ? format(sessionDate, "PPP") : "Pick a date"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={sessionDate}
+              onSelect={(d) => d && setSessionDate(d)}
+              disabled={(d) => d > new Date()}
+              initialFocus
+              className={cn("p-3 pointer-events-auto")}
+            />
+          </PopoverContent>
+        </Popover>
         {courseId && (
           <div className="ml-auto flex flex-wrap items-center gap-2">
             <Button variant="outline" size="sm" onClick={downloadTodaysAttendance} disabled={!students.length}>

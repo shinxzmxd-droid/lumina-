@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
+
 import { AlertTriangle, CheckCircle2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
@@ -20,8 +20,11 @@ const MIN_PCT = 75;
 function Page() {
   const { user } = useAuth();
   const [rows, setRows] = useState<any[]>([]);
-  const [plan, setPlan] = useState<Record<string, number>>({}); // course_id -> % attend (0-100)
-  const [upcomingBySubject, setUpcomingBySubject] = useState<Record<string, number>>({});
+  
+  
+  // Per-class toggles: key = `${course_id}|${YYYY-MM-DD}` -> boolean (will attend)
+  const [dayPlan, setDayPlan] = useState<Record<string, boolean>>({});
+  const [upcomingClasses, setUpcomingClasses] = useState<Array<{ key: string; course_id: string; date: string; dow: number }>>([]);
 
   useEffect(() => {
     if (!user) return;
@@ -43,16 +46,8 @@ function Page() {
     return Object.values(map).map((s) => ({ ...s, pct: s.total ? Math.round((s.present / s.total) * 100) : 0 }));
   }, [rows]);
 
-  // Initialize plan default to 100% per subject
-  useEffect(() => {
-    setPlan((prev) => {
-      const next = { ...prev };
-      bySubject.forEach((s) => { if (next[s.id] === undefined) next[s.id] = 100; });
-      return next;
-    });
-  }, [bySubject]);
 
-  // Fetch upcoming class counts for next 2 weeks
+  // Fetch upcoming class instances (next 2 weeks) per subject
   useEffect(() => {
     if (!user || bySubject.length === 0) return;
     const courseIds = bySubject.map((s) => s.id);
@@ -62,14 +57,23 @@ function Page() {
       .then(({ data }) => {
         const today = new Date(); today.setHours(0, 0, 0, 0);
         const counts: Record<string, number> = {};
+        const instances: Array<{ key: string; course_id: string; date: string; dow: number }> = [];
         for (let i = 1; i <= 14; i++) {
           const d = new Date(today); d.setDate(today.getDate() + i);
           const dow = d.getDay();
+          const iso = d.toISOString().slice(0, 10);
           (data ?? []).filter((s: any) => Number(s.day_of_week) === dow).forEach((s: any) => {
             counts[s.course_id] = (counts[s.course_id] ?? 0) + 1;
+            instances.push({ key: `${s.course_id}|${iso}`, course_id: s.course_id, date: iso, dow });
           });
         }
-        setUpcomingBySubject(counts);
+        void counts;
+        setUpcomingClasses(instances);
+        setDayPlan((prev) => {
+          const next = { ...prev };
+          instances.forEach((c) => { if (next[c.key] === undefined) next[c.key] = true; });
+          return next;
+        });
       });
   }, [user, bySubject.length]);
 
@@ -81,22 +85,23 @@ function Page() {
     let projPresent = overallPresent;
     let projTotal = overallTotal;
     const perSubject = bySubject.map((s) => {
-      const upcoming = upcomingBySubject[s.id] ?? 0;
-      const willAttend = Math.round((upcoming * (plan[s.id] ?? 100)) / 100);
+      const upcoming = upcomingClasses.filter((c) => c.course_id === s.id);
+      const willAttend = upcoming.filter((c) => dayPlan[c.key]).length;
       const newPresent = s.present + willAttend;
-      const newTotal = s.total + upcoming;
+      const newTotal = s.total + upcoming.length;
       projPresent += willAttend;
-      projTotal += upcoming;
+      projTotal += upcoming.length;
       return {
         ...s,
-        upcoming,
+        upcoming: upcoming.length,
         willAttend,
+        upcomingClasses: upcoming,
         projPct: newTotal ? Math.round((newPresent / newTotal) * 100) : 0,
       };
     });
     const projOverall = projTotal ? Math.round((projPresent / projTotal) * 100) : 0;
     return { perSubject, projOverall };
-  }, [bySubject, plan, upcomingBySubject, overallPresent, overallTotal]);
+  }, [bySubject, dayPlan, upcomingClasses, overallPresent, overallTotal]);
 
   return (
     <div className="space-y-6">
@@ -126,7 +131,7 @@ function Page() {
           </div>
           <div>
             <h3 className="font-display font-semibold">Attendance Predictor</h3>
-            <p className="text-sm text-muted-foreground">Choose how many classes you plan to attend per subject for the next 2 weeks. Your projected attendance updates live.</p>
+            <p className="text-sm text-muted-foreground">Toggle the days you plan to attend per subject for the next 2 weeks. Your projected attendance updates live.</p>
           </div>
         </div>
 
@@ -149,7 +154,9 @@ function Page() {
             </div>
 
             <div className="grid sm:grid-cols-2 gap-3">
-              {projection.perSubject.map((s) => (
+              {projection.perSubject.map((s) => {
+                const pct = s.upcoming ? Math.round((s.willAttend / s.upcoming) * 100) : 100;
+                return (
                 <div key={s.id} className="rounded-lg bg-background border p-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
@@ -161,36 +168,58 @@ function Page() {
                     </div>
                   </div>
                   <div>
-                    <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                    <div className="flex justify-between text-xs text-muted-foreground mb-2">
                       <span>Plan to attend</span>
-                      <span><strong>{s.willAttend}/{s.upcoming}</strong> ({plan[s.id] ?? 100}%)</span>
+                      <span><strong>{s.willAttend}/{s.upcoming}</strong> ({pct}%)</span>
                     </div>
-                    <Slider
-                      value={[plan[s.id] ?? 100]}
-                      min={0}
-                      max={100}
-                      step={5}
-                      onValueChange={(v) => setPlan((p) => ({ ...p, [s.id]: v[0] }))}
-                      disabled={s.upcoming === 0}
-                    />
+                    {s.upcomingClasses.length === 0 ? (
+                      <p className="text-xs text-muted-foreground italic">No classes in next 2 weeks.</p>
+                    ) : (
+                      <div className="flex flex-wrap gap-1.5">
+                        {s.upcomingClasses.map((c) => {
+                          const d = new Date(c.date);
+                          const label = d.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" });
+                          const on = dayPlan[c.key] ?? true;
+                          return (
+                            <button
+                              key={c.key}
+                              type="button"
+                              onClick={() => setDayPlan((p) => ({ ...p, [c.key]: !on }))}
+                              className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-colors ${
+                                on
+                                  ? "bg-success text-success-foreground border-success"
+                                  : "bg-background text-muted-foreground border-border hover:bg-muted"
+                              }`}
+                            >
+                              {label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
 
             <div className="flex gap-2 flex-wrap">
               <Button size="sm" variant="outline" onClick={() => {
-                const all: Record<string, number> = {}; bySubject.forEach(s => all[s.id] = 100);
-                setPlan(all); toast.success("Set all to 100%");
-              }}>Attend all</Button>
+                const next: Record<string, boolean> = {};
+                upcomingClasses.forEach((c) => { next[c.key] = true; });
+                setDayPlan(next); toast.success("Marked all days as attending");
+              }}>Attend all days</Button>
               <Button size="sm" variant="outline" onClick={() => {
-                const all: Record<string, number> = {}; bySubject.forEach(s => all[s.id] = 75);
-                setPlan(all);
-              }}>75% each</Button>
+                const next: Record<string, boolean> = {};
+                upcomingClasses.forEach((c) => { next[c.key] = false; });
+                setDayPlan(next);
+              }}>Skip all</Button>
               <Button size="sm" variant="outline" onClick={() => {
-                const all: Record<string, number> = {}; bySubject.forEach(s => all[s.id] = 50);
-                setPlan(all);
-              }}>50% each</Button>
+                // Skip weekends only
+                const next: Record<string, boolean> = { ...dayPlan };
+                upcomingClasses.forEach((c) => { next[c.key] = c.dow !== 0 && c.dow !== 6; });
+                setDayPlan(next);
+              }}>Weekdays only</Button>
             </div>
           </div>
         )}
