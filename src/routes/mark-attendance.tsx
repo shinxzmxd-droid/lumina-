@@ -26,7 +26,8 @@ function Page() {
   const [courseId, setCourseId] = useState<string>("");
   const [students, setStudents] = useState<any[]>([]);
   const [present, setPresent] = useState<Record<string, boolean>>({});
-  const [date] = useState(new Date().toISOString().slice(0,10));
+  const [sessionDate, setSessionDate] = useState<Date>(new Date());
+  const date = sessionDate.toISOString().slice(0, 10);
 
   useEffect(() => {
     supabase.from("courses").select("*").eq("faculty_id", user!.id).then(({data}) => setCourses(data ?? []));
