@@ -67,7 +67,7 @@ function Page() {
             instances.push({ key: `${s.course_id}|${iso}`, course_id: s.course_id, date: iso, dow });
           });
         }
-        setUpcomingBySubject(counts);
+        void counts;
         setUpcomingClasses(instances);
         setDayPlan((prev) => {
           const next = { ...prev };
