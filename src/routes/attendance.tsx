@@ -46,13 +46,6 @@ function Page() {
     return Object.values(map).map((s) => ({ ...s, pct: s.total ? Math.round((s.present / s.total) * 100) : 0 }));
   }, [rows]);
 
-  useEffect(() => {
-    setPlan((prev) => {
-      const next = { ...prev };
-      bySubject.forEach((s) => { if (next[s.id] === undefined) next[s.id] = 100; });
-      return next;
-    });
-  }, [bySubject]);
 
   // Fetch upcoming class instances (next 2 weeks) per subject
   useEffect(() => {
