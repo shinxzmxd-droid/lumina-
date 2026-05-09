@@ -161,7 +161,9 @@ function Page() {
             </div>
 
             <div className="grid sm:grid-cols-2 gap-3">
-              {projection.perSubject.map((s) => (
+              {projection.perSubject.map((s) => {
+                const pct = s.upcoming ? Math.round((s.willAttend / s.upcoming) * 100) : 100;
+                return (
                 <div key={s.id} className="rounded-lg bg-background border p-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
@@ -173,36 +175,58 @@ function Page() {
                     </div>
                   </div>
                   <div>
-                    <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                    <div className="flex justify-between text-xs text-muted-foreground mb-2">
                       <span>Plan to attend</span>
-                      <span><strong>{s.willAttend}/{s.upcoming}</strong> ({plan[s.id] ?? 100}%)</span>
+                      <span><strong>{s.willAttend}/{s.upcoming}</strong> ({pct}%)</span>
                     </div>
-                    <Slider
-                      value={[plan[s.id] ?? 100]}
-                      min={0}
-                      max={100}
-                      step={5}
-                      onValueChange={(v) => setPlan((p) => ({ ...p, [s.id]: v[0] }))}
-                      disabled={s.upcoming === 0}
-                    />
+                    {s.upcomingClasses.length === 0 ? (
+                      <p className="text-xs text-muted-foreground italic">No classes in next 2 weeks.</p>
+                    ) : (
+                      <div className="flex flex-wrap gap-1.5">
+                        {s.upcomingClasses.map((c) => {
+                          const d = new Date(c.date);
+                          const label = d.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" });
+                          const on = dayPlan[c.key] ?? true;
+                          return (
+                            <button
+                              key={c.key}
+                              type="button"
+                              onClick={() => setDayPlan((p) => ({ ...p, [c.key]: !on }))}
+                              className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-colors ${
+                                on
+                                  ? "bg-success text-success-foreground border-success"
+                                  : "bg-background text-muted-foreground border-border hover:bg-muted"
+                              }`}
+                            >
+                              {label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
 
             <div className="flex gap-2 flex-wrap">
               <Button size="sm" variant="outline" onClick={() => {
-                const all: Record<string, number> = {}; bySubject.forEach(s => all[s.id] = 100);
-                setPlan(all); toast.success("Set all to 100%");
-              }}>Attend all</Button>
+                const next: Record<string, boolean> = {};
+                upcomingClasses.forEach((c) => { next[c.key] = true; });
+                setDayPlan(next); toast.success("Marked all days as attending");
+              }}>Attend all days</Button>
               <Button size="sm" variant="outline" onClick={() => {
-                const all: Record<string, number> = {}; bySubject.forEach(s => all[s.id] = 75);
-                setPlan(all);
-              }}>75% each</Button>
+                const next: Record<string, boolean> = {};
+                upcomingClasses.forEach((c) => { next[c.key] = false; });
+                setDayPlan(next);
+              }}>Skip all</Button>
               <Button size="sm" variant="outline" onClick={() => {
-                const all: Record<string, number> = {}; bySubject.forEach(s => all[s.id] = 50);
-                setPlan(all);
-              }}>50% each</Button>
+                // Skip weekends only
+                const next: Record<string, boolean> = { ...dayPlan };
+                upcomingClasses.forEach((c) => { next[c.key] = c.dow !== 0 && c.dow !== 6; });
+                setDayPlan(next);
+              }}>Weekdays only</Button>
             </div>
           </div>
         )}
