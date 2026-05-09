@@ -20,8 +20,11 @@ const MIN_PCT = 75;
 function Page() {
   const { user } = useAuth();
   const [rows, setRows] = useState<any[]>([]);
-  const [plan, setPlan] = useState<Record<string, number>>({}); // course_id -> % attend (0-100)
+  const [plan, setPlan] = useState<Record<string, number>>({}); // course_id -> % attend
   const [upcomingBySubject, setUpcomingBySubject] = useState<Record<string, number>>({});
+  // Per-class toggles: key = `${course_id}|${YYYY-MM-DD}` -> boolean (will attend)
+  const [dayPlan, setDayPlan] = useState<Record<string, boolean>>({});
+  const [upcomingClasses, setUpcomingClasses] = useState<Array<{ key: string; course_id: string; date: string; dow: number }>>([]);
 
   useEffect(() => {
     if (!user) return;
@@ -43,7 +46,6 @@ function Page() {
     return Object.values(map).map((s) => ({ ...s, pct: s.total ? Math.round((s.present / s.total) * 100) : 0 }));
   }, [rows]);
 
-  // Initialize plan default to 100% per subject
   useEffect(() => {
     setPlan((prev) => {
       const next = { ...prev };
@@ -52,7 +54,7 @@ function Page() {
     });
   }, [bySubject]);
 
-  // Fetch upcoming class counts for next 2 weeks
+  // Fetch upcoming class instances (next 2 weeks) per subject
   useEffect(() => {
     if (!user || bySubject.length === 0) return;
     const courseIds = bySubject.map((s) => s.id);
@@ -62,14 +64,23 @@ function Page() {
       .then(({ data }) => {
         const today = new Date(); today.setHours(0, 0, 0, 0);
         const counts: Record<string, number> = {};
+        const instances: Array<{ key: string; course_id: string; date: string; dow: number }> = [];
         for (let i = 1; i <= 14; i++) {
           const d = new Date(today); d.setDate(today.getDate() + i);
           const dow = d.getDay();
+          const iso = d.toISOString().slice(0, 10);
           (data ?? []).filter((s: any) => Number(s.day_of_week) === dow).forEach((s: any) => {
             counts[s.course_id] = (counts[s.course_id] ?? 0) + 1;
+            instances.push({ key: `${s.course_id}|${iso}`, course_id: s.course_id, date: iso, dow });
           });
         }
         setUpcomingBySubject(counts);
+        setUpcomingClasses(instances);
+        setDayPlan((prev) => {
+          const next = { ...prev };
+          instances.forEach((c) => { if (next[c.key] === undefined) next[c.key] = true; });
+          return next;
+        });
       });
   }, [user, bySubject.length]);
 
@@ -81,22 +92,23 @@ function Page() {
     let projPresent = overallPresent;
     let projTotal = overallTotal;
     const perSubject = bySubject.map((s) => {
-      const upcoming = upcomingBySubject[s.id] ?? 0;
-      const willAttend = Math.round((upcoming * (plan[s.id] ?? 100)) / 100);
+      const upcoming = upcomingClasses.filter((c) => c.course_id === s.id);
+      const willAttend = upcoming.filter((c) => dayPlan[c.key]).length;
       const newPresent = s.present + willAttend;
-      const newTotal = s.total + upcoming;
+      const newTotal = s.total + upcoming.length;
       projPresent += willAttend;
-      projTotal += upcoming;
+      projTotal += upcoming.length;
       return {
         ...s,
-        upcoming,
+        upcoming: upcoming.length,
         willAttend,
+        upcomingClasses: upcoming,
         projPct: newTotal ? Math.round((newPresent / newTotal) * 100) : 0,
       };
     });
     const projOverall = projTotal ? Math.round((projPresent / projTotal) * 100) : 0;
     return { perSubject, projOverall };
-  }, [bySubject, plan, upcomingBySubject, overallPresent, overallTotal]);
+  }, [bySubject, dayPlan, upcomingClasses, overallPresent, overallTotal]);
 
   return (
     <div className="space-y-6">
