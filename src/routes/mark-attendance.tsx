@@ -36,18 +36,25 @@ function Page() {
   useEffect(() => {
     if (!courseId) return;
     (async () => {
-      // Pull all students assigned to this faculty ("My Students")
       const { data: profs } = await supabase
         .from("profiles")
         .select("user_id, full_name, approved, assigned_faculty_id")
         .eq("assigned_faculty_id", user!.id);
       const list = (profs ?? []).sort((a, b) => (a.full_name || "").localeCompare(b.full_name || ""));
       setStudents(list);
+      // Load existing attendance for selected date
+      const { data: existing } = await supabase
+        .from("attendance")
+        .select("student_id, present")
+        .eq("course_id", courseId)
+        .eq("session_date", date);
+      const existingMap: Record<string, boolean> = {};
+      (existing ?? []).forEach((r: any) => { existingMap[r.student_id] = r.present; });
       const init: Record<string, boolean> = {};
-      list.forEach((s: any) => { init[s.user_id] = true; });
+      list.forEach((s: any) => { init[s.user_id] = existingMap[s.user_id] ?? true; });
       setPresent(init);
     })();
-  }, [courseId]);
+  }, [courseId, date]);
 
   const save = async () => {
     if (!courseId) return;
