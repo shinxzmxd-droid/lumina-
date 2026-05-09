@@ -109,7 +109,24 @@ function Page() {
             </SelectContent>
           </Select>
         </div>
-        <div className="text-sm text-muted-foreground">Session date: {date}</div>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className={cn("justify-start text-left font-normal", !sessionDate && "text-muted-foreground")}>
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {sessionDate ? format(sessionDate, "PPP") : "Pick a date"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={sessionDate}
+              onSelect={(d) => d && setSessionDate(d)}
+              disabled={(d) => d > new Date()}
+              initialFocus
+              className={cn("p-3 pointer-events-auto")}
+            />
+          </PopoverContent>
+        </Popover>
         {courseId && (
           <div className="ml-auto flex flex-wrap items-center gap-2">
             <Button variant="outline" size="sm" onClick={downloadTodaysAttendance} disabled={!students.length}>
